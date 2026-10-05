@@ -1,0 +1,32 @@
+# ─── Development override ────────────────────────────────────────────────────
+# Use this file alongside docker-compose.yml for local development:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Changes from production:
+#   - Server runs with nodemon (live reload)
+#   - Source code is mounted as a volume (hot reload)
+#   - NODE_ENV is development
+#   - Client runs Vite dev server instead of nginx
+
+services:
+  server:
+    build:
+      target: deps          # only need deps stage for dev
+    command: npx nodemon server.js
+    environment:
+      NODE_ENV: development
+    volumes:
+      - ./server:/app
+      - /app/node_modules   # anonymous volume to protect container node_modules
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      VITE_API_URL: http://localhost:5000/api

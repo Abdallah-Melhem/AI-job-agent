@@ -1,0 +1,70 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Environment files
+.env
+.env.*
+.env.local
+.env.development
+.env.production
+.env.test
+!.env.example
+
+# Build & compiled output
+dist/
+client/dist/
+build/
+dist-ssr/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Test coverage & artifacts
+coverage/
+.nyc_output/
+
+# User uploads & generated resumes (preserve directory structure via .gitkeep)
+uploads/*
+!uploads/.gitkeep
+!uploads/tailored/
+uploads/tailored/*
+!uploads/tailored/.gitkeep
+server/uploads/*
+!server/uploads/.gitkeep
+!server/uploads/tailored/
+server/uploads/tailored/*
+!server/uploads/tailored/.gitkeep
+client/uploads/*
+
+# Docker & local data volumes
+ollama_data/
+
+# IDE, Editor, & Tooling
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.agents/
+skills-lock.json
+
+# Operating System files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+[Dd]esktop.ini
+
+# Temporary & cache files
+tmp/
+temp/
+*.tmp
+*.bak

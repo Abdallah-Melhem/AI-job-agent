@@ -1,0 +1,110 @@
+# ─── AI Job Agent — Docker Compose ──────────────────────────────────────────
+# Usage:
+#   Development:   docker compose up
+#   Rebuild:       docker compose up --build
+#   Background:    docker compose up -d
+#
+# All sensitive values come from .env at the project root.
+# Copy .env.example to .env and fill in your secrets before running.
+
+name: ai-job-agent
+
+services:
+  # ── Server (Express API + Background Worker) ────────────────────────────
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: aijobagent-server
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DISABLE_IN_PROCESS_WORKER: "true"
+      # Override Ollama URL to point to the ollama container
+      OLLAMA_BASE_URL: http://ollama:11434
+      # Override CORS to point to the client container
+      FRONTEND_URL: http://localhost:80
+    ports:
+      # Expose API only on localhost — put a reverse proxy in front for production
+      - "5000:5000"
+    volumes:
+      # Persist uploaded CVs and generated resumes
+      - uploads_data:/app/uploads
+    depends_on:
+      - ollama
+    networks:
+      - internal
+
+  # ── Worker (Dedicated Background Queue Processor) ───────────────────────
+  worker:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    command: ["node", "worker.js"]
+    container_name: aijobagent-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      OLLAMA_BASE_URL: http://ollama:11434
+    volumes:
+      - uploads_data:/app/uploads
+    depends_on:
+      - ollama
+    networks:
+      - internal
+
+  # ── Client (Vite build → nginx) ─────────────────────────────────────────
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+      args:
+        # Point the frontend at the server API
+        VITE_API_URL: http://localhost:5000/api
+    container_name: aijobagent-client
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    networks:
+      - internal
+
+  # ── Ollama (Local LLM) ───────────────────────────────────────────────────
+  # Internal service — NOT exposed to the public internet.
+  # The server container communicates with it via the internal network.
+  ollama:
+    image: ollama/ollama:latest
+    container_name: aijobagent-ollama
+    restart: unless-stopped
+    volumes:
+      # Persist downloaded models so they survive container restarts
+      - ollama_data:/root/.ollama
+    # NOT added to ports: — only reachable from within the internal network
+    networks:
+      - internal
+    # GPU support (comment out if not available):
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+# ── Networks ──────────────────────────────────────────────────────────────
+networks:
+  internal:
+    driver: bridge
+
+# ── Volumes ───────────────────────────────────────────────────────────────
+volumes:
+  uploads_data:
+    driver: local
+  ollama_data:
+    driver: local

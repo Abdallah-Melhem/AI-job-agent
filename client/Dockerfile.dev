@@ -1,0 +1,15 @@
+# ─── Client Dev Dockerfile ──────────────────────────────────────────────────
+# Used only with docker-compose.dev.yml
+# Runs vite dev server with hot module replacement
+
+FROM node:20-alpine
+WORKDIR /app
+
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
