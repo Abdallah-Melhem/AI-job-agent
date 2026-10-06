@@ -1,34 +1,97 @@
+const { validateJob } = require('./jobValidator');
+
 /**
- * Job Source Adapter – abstract base class.
+ * JobAdapter — abstract base class for all job source adapters.
  *
- * Every adapter must implement:
- *   search(query)  → raw results from the external source
- *   getJob(id)     → raw single job from the external source
- *   normalize(raw) → internal Job-compatible plain object
+ * Implements the standard adapter interface defined in Phase 2:
+ *   - fetchJobs(query)       → raw jobs from the external source
+ *   - normalizeJob(rawJob)   → normalized Job plain object matching Mongoose schema
+ *   - validateJob(job)       → validate schema compliance before persisting
+ *   - getSourceMetadata()    → describe source capabilities and config
+ *
+ * Backward-compatible aliases:
+ *   - search(query)          → aliases fetchJobs(query)
+ *   - normalize(rawJob)      → aliases normalizeJob(rawJob)
  */
 class JobAdapter {
-  constructor(sourceName) {
+  /**
+   * @param {string} sourceName - unique identifier for this source (e.g. 'arbeitnow', 'remoteok')
+   * @param {object} [config={}] - source-specific configuration (e.g. timeout, rate limits, custom URLs)
+   */
+  constructor(sourceName, config = {}) {
     if (!sourceName) throw new Error('Adapter must have a sourceName');
     this.sourceName = sourceName;
-  }
-
-  /** Search the external source. Returns an array of raw job objects. */
-  async search(query) {
-    throw new Error('search() not implemented');
-  }
-
-  /** Fetch a single raw job by its external ID. */
-  async getJob(externalId) {
-    throw new Error('getJob() not implemented');
+    this.config = config;
   }
 
   /**
-   * Convert one raw external job object into the internal normalised shape
-   * that matches the Job mongoose schema.
-   * Must include at least: { source, externalId, title, company }
+   * Fetch raw jobs from the external source.
+   *
+   * @param {object} query - optional search filters
+   * @returns {Promise<object[]>} raw job records from source
+   */
+  async fetchJobs(query = {}) {
+    // If subclass implemented search() instead of fetchJobs(), invoke that
+    return this.search(query);
+  }
+
+  /**
+   * Backward-compatible search method.
+   */
+  async search(query = {}) {
+    throw new Error(`${this.sourceName}: fetchJobs() / search() not implemented`);
+  }
+
+  /**
+   * Fetch a single raw job by external ID.
+   *
+   * @param {string} externalId
+   * @returns {Promise<object|null>}
+   */
+  async getJob(externalId) {
+    throw new Error(`${this.sourceName}: getJob() not implemented`);
+  }
+
+  /**
+   * Normalize a raw job object into internal Job schema shape.
+   *
+   * @param {object} rawJob
+   * @returns {object} normalized job object
+   */
+  normalizeJob(rawJob) {
+    return this.normalize(rawJob);
+  }
+
+  /**
+   * Backward-compatible normalize method.
    */
   normalize(rawJob) {
-    throw new Error('normalize() not implemented');
+    throw new Error(`${this.sourceName}: normalizeJob() / normalize() not implemented`);
+  }
+
+  /**
+   * Validate a normalized job against schema requirements.
+   *
+   * @param {object} normalizedJob
+   * @returns {{ valid: boolean, errors: string[] }}
+   */
+  validateJob(normalizedJob) {
+    return validateJob(normalizedJob);
+  }
+
+  /**
+   * Return metadata and source capabilities.
+   *
+   * @returns {{ sourceName: string, displayName: string, description: string, isRealSource: boolean, config: object }}
+   */
+  getSourceMetadata() {
+    return {
+      sourceName: this.sourceName,
+      displayName: this.sourceName,
+      description: 'Job source adapter',
+      isRealSource: true,
+      config: { ...this.config }
+    };
   }
 }
 

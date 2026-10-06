@@ -5,11 +5,25 @@ const jobSchema = new mongoose.Schema({
   source: {
     type: String,
     required: true,
-    index: true        // e.g. 'mock', 'linkedin', 'indeed', 'remoteok'
+    index: true        // e.g. 'arbeitnow', 'remoteok', 'manual'
   },
   externalId: {
     type: String,
     required: true
+  },
+  sourceUrl: {
+    type: String,
+    default: ''
+  },
+  importedAt: {
+    type: Date,
+    default: Date.now
+  },
+  status: {
+    type: String,
+    enum: ['active', 'closed', 'archived', 'draft'],
+    default: 'active',
+    index: true
   },
 
   // ── Core Fields (normalised) ──────────────────────────────────────
@@ -22,6 +36,25 @@ const jobSchema = new mongoose.Schema({
     required: true
   },
   location: {
+    type: String,
+    default: ''
+  },
+  country: {
+    type: String,
+    default: ''
+  },
+  experienceLevel: {
+    type: String,
+    enum: ['entry-level', 'junior', 'mid-level', 'senior', 'lead', 'executive', 'not-specified'],
+    default: 'not-specified',
+    index: true
+  },
+  category: {
+    type: String,
+    default: 'Other',
+    index: true
+  },
+  subcategory: {
     type: String,
     default: ''
   },
@@ -71,6 +104,19 @@ const jobSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Pre-save hook to synchronize url / sourceUrl and ensure importedAt
+jobSchema.pre('save', function () {
+  if (this.url && !this.sourceUrl) {
+    this.sourceUrl = this.url;
+  }
+  if (this.sourceUrl && !this.url) {
+    this.url = this.sourceUrl;
+  }
+  if (!this.importedAt) {
+    this.importedAt = this.createdAt || new Date();
+  }
 });
 
 // Compound unique index to prevent duplicates from the same source

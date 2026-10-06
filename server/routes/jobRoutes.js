@@ -8,11 +8,13 @@ const {
   matchJob, 
   tailorResume, 
   getTailoredResume,
-  getSources
+  getSources,
+  getCategories
 } = require('../controllers/jobController');
 const { protect } = require('../middleware/authMiddleware');
 
 router.get('/sources', protect, getSources);
+router.get('/categories', protect, getCategories);
 router.get('/search', protect, searchJobs);
 router.get('/saved', protect, getSavedJobs);
 router.get('/:id', protect, getJob);

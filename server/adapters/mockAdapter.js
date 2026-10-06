@@ -1,8 +1,19 @@
 const JobAdapter = require('./jobAdapter');
+const {
+  normalizeJobType,
+  normalizeRemote,
+  normalizeExternalId,
+  normalizeCategory,
+  normalizeExperienceLevel,
+  extractCountry
+} = require('./jobNormalizer');
 
 /**
  * Mock adapter — returns hard-coded sample jobs so the rest of the stack
  * can be developed and tested without any external API dependency.
+ *
+ * NOTE: This adapter is ONLY registered when ENABLE_MOCK_JOBS=true.
+ * It must never run in production.
  */
 
 const MOCK_JOBS = [
@@ -79,8 +90,20 @@ const MOCK_JOBS = [
 ];
 
 class MockAdapter extends JobAdapter {
-  constructor() {
-    super('mock');
+  constructor(config = {}) {
+    super('mock', config);
+  }
+
+  getSourceMetadata() {
+    return {
+      sourceName: this.sourceName,
+      displayName: 'Mock (Dev/Test)',
+      description: 'Hardcoded sample jobs for development and testing. Not a real source.',
+      isRealSource: false,
+      website: null,
+      apiUrl: null,
+      config: { ...this.config }
+    };
   }
 
   async search(query = {}) {
@@ -121,23 +144,33 @@ class MockAdapter extends JobAdapter {
   }
 
   normalize(rawJob) {
+    const category = normalizeCategory(rawJob.skills, rawJob.title, rawJob.skills);
+
     return {
-      source: this.sourceName,
-      externalId: rawJob.id,
-      title: rawJob.title,
-      company: rawJob.company,
-      location: rawJob.location || '',
-      type: rawJob.type || 'full-time',
-      remote: rawJob.remote || 'unknown',
-      description: rawJob.description || '',
+      source:          this.sourceName,
+      externalId:      normalizeExternalId(rawJob.id),
+      title:           rawJob.title    || 'Job',
+      company:         rawJob.company  || 'Company',
+      location:        rawJob.location || '',
+      country:         extractCountry(rawJob.location, ''),
+      experienceLevel: normalizeExperienceLevel('', rawJob.title),
+      category:        category,
+      subcategory:     '',
+      type:            normalizeJobType(rawJob.type),
+      remote:       normalizeRemote(rawJob.remote),
+      description:  rawJob.description || '',
       requirements: rawJob.requirements || [],
-      skills: rawJob.skills || [],
-      salary: rawJob.salary || {},
-      url: rawJob.url || '',
-      postedAt: rawJob.postedAt || new Date(),
-      rawData: rawJob
+      skills:       rawJob.skills || [],
+      salary:       rawJob.salary || {},
+      url:          rawJob.url    || '',
+      sourceUrl:    rawJob.url    || '',
+      status:       'active',
+      postedAt:     rawJob.postedAt || new Date(),
+      importedAt:   new Date(),
+      rawData:      rawJob
     };
   }
 }
 
 module.exports = MockAdapter;
+

@@ -9,20 +9,46 @@ const logger = require('../utils/logger');
  */
 const searchJobs = async (req, res) => {
   try {
-    const { keyword, type, remote, location, source, minSalary, postedAfter, page, limit } = req.query;
+    const {
+      keyword,
+      type,
+      remote,
+      location,
+      country,
+      source,
+      category,
+      subcategory,
+      experienceLevel,
+      company,
+      minSalary,
+      maxSalary,
+      currency,
+      postedAfter,
+      sortBy,
+      page,
+      limit
+    } = req.query;
 
     // Import from selected adapter or all registered adapters
-    await adapterRegistry.importJobs(source || 'all', { keyword, type, remote, location });
+    await adapterRegistry.importJobs(source || 'all', { keyword, type, remote, location, category });
 
-    // Then search from DB (includes newly imported and previously stored jobs)
+    // Then search from DB with all combined filters and sorting
     const result = await jobService.searchJobs({
       keyword, 
       type, 
       remote, 
-      location, 
+      location,
+      country,
+      category: (category && category !== 'all') ? category : undefined,
+      subcategory,
+      experienceLevel: (experienceLevel && experienceLevel !== 'all') ? experienceLevel : undefined,
+      company,
       source: (source && source !== 'all') ? source : undefined, 
-      minSalary, 
-      postedAfter, 
+      minSalary,
+      maxSalary,
+      currency,
+      postedAfter,
+      sortBy,
       page, 
       limit
     });
@@ -42,7 +68,8 @@ const searchJobs = async (req, res) => {
 const getSources = (req, res) => {
   res.json({
     success: true,
-    sources: ['all', ...adapterRegistry.listSources()]
+    sources: ['all', ...adapterRegistry.listSources()],
+    details: adapterRegistry.getAllMetadata()
   });
 };
 
@@ -172,4 +199,32 @@ const getTailoredResume = async (req, res) => {
   }
 };
 
-module.exports = { searchJobs, getJob, toggleSaveJob, getSavedJobs, matchJob, tailorResume, getTailoredResume, getSources };
+/**
+ * @desc    Get list of standardized job categories
+ * @route   GET /api/jobs/categories
+ * @access  Private
+ */
+const getCategories = async (req, res) => {
+  try {
+    const categories = await jobService.getCategories();
+    res.json({
+      success: true,
+      categories
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = {
+  searchJobs,
+  getJob,
+  toggleSaveJob,
+  getSavedJobs,
+  matchJob,
+  tailorResume,
+  getTailoredResume,
+  getSources,
+  getCategories
+};
+

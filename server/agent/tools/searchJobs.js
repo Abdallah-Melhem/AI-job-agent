@@ -1,6 +1,5 @@
 const jobService = require('../../services/jobService');
-const MockAdapter = require('../../adapters/mockAdapter');
-const mockAdapter = new MockAdapter();
+const adapterRegistry = require('../../adapters/adapterRegistry');
 
 module.exports = {
   name: 'searchJobs',
@@ -20,6 +19,21 @@ module.exports = {
         description: 'Remote work preference'
       },
       location: { type: 'string', description: 'Location city, state, or country' },
+      country: { type: 'string', description: 'Country filter (e.g. Germany, United States, Worldwide)' },
+      company: { type: 'string', description: 'Company name' },
+      category: { type: 'string', description: 'Job category (e.g. Software Development, Sales, Marketing, Design)' },
+      experienceLevel: { 
+        type: 'string', 
+        enum: ['entry-level', 'junior', 'mid-level', 'senior', 'lead', 'executive'],
+        description: 'Seniority / experience level'
+      },
+      minSalary: { type: 'number', description: 'Minimum salary amount' },
+      sortBy: { 
+        type: 'string', 
+        enum: ['newest', 'oldest', 'salary-desc', 'salary-asc', 'relevance'],
+        description: 'Sorting criteria'
+      },
+      source: { type: 'string', description: 'Job source filter (e.g. remoteok, arbeitnow, jobicy, or all)' },
       limit: { type: 'number', description: 'Maximum number of jobs to return (default: 10)' }
     },
     required: []
@@ -35,14 +49,21 @@ module.exports = {
   },
   permission: 'authenticated_user',
   async execute(params, context) {
-    // Import from adapter if needed to ensure fresh data
-    await jobService.importFromAdapter(mockAdapter, params);
+    // Import fresh jobs from registered sources if needed
+    await adapterRegistry.importJobs('all', params);
 
     const result = await jobService.searchJobs({
       keyword: params.keyword,
       type: params.type,
       remote: params.remote,
       location: params.location,
+      country: params.country,
+      company: params.company,
+      category: params.category,
+      experienceLevel: params.experienceLevel,
+      minSalary: params.minSalary,
+      sortBy: params.sortBy,
+      source: params.source,
       limit: params.limit || 10
     });
 
@@ -54,6 +75,9 @@ module.exports = {
         title: j.title,
         company: j.company,
         location: j.location,
+        country: j.country,
+        category: j.category,
+        experienceLevel: j.experienceLevel,
         type: j.type,
         remote: j.remote,
         skills: j.skills,

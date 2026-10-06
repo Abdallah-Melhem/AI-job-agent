@@ -27,10 +27,19 @@ function Jobs() {
   const [type, setType] = useState('');
   const [remote, setRemote] = useState('');
   const [location, setLocation] = useState('');
+  const [country, setCountry] = useState('');
+  const [company, setCompany] = useState('');
   const [source, setSource] = useState('all');
+  const [category, setCategory] = useState('all');
+  const [experienceLevel, setExperienceLevel] = useState('all');
+  const [minSalary, setMinSalary] = useState('');
+  const [maxSalary, setMaxSalary] = useState('');
+  const [sortBy, setSortBy] = useState('newest');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Available sources from backend
+  // Available sources and categories from backend
   const [sources, setSources] = useState(['all']);
+  const [categories, setCategories] = useState(['all']);
 
   // Tab
   const [tab, setTab] = useState('search'); // 'search' | 'saved'
@@ -38,6 +47,9 @@ function Jobs() {
   useEffect(() => {
     api.get('/jobs/sources')
       .then(r => setSources(r.data.sources || ['all']))
+      .catch(() => {});
+    api.get('/jobs/categories')
+      .then(r => setCategories(['all', ...(r.data.categories || [])]))
       .catch(() => {});
   }, []);
 
@@ -50,7 +62,14 @@ function Jobs() {
       if (type) params.append('type', type);
       if (remote) params.append('remote', remote);
       if (location) params.append('location', location);
+      if (country) params.append('country', country);
+      if (company) params.append('company', company);
       if (source && source !== 'all') params.append('source', source);
+      if (category && category !== 'all') params.append('category', category);
+      if (experienceLevel && experienceLevel !== 'all') params.append('experienceLevel', experienceLevel);
+      if (minSalary) params.append('minSalary', minSalary);
+      if (maxSalary) params.append('maxSalary', maxSalary);
+      if (sortBy) params.append('sortBy', sortBy);
       params.append('page', page);
       params.append('limit', 20);
 
@@ -62,6 +81,21 @@ function Jobs() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleResetFilters = () => {
+    setKeyword('');
+    setType('');
+    setRemote('');
+    setLocation('');
+    setCountry('');
+    setCompany('');
+    setSource('all');
+    setCategory('all');
+    setExperienceLevel('all');
+    setMinSalary('');
+    setMaxSalary('');
+    setSortBy('newest');
   };
 
   const fetchSavedJobs = async () => {
@@ -225,47 +259,118 @@ function Jobs() {
         <form className="card shadow-sm mb-4 p-3" onSubmit={handleSearch}>
           <div className="row g-2 align-items-end">
             <div className="col-md-3">
-              <label className="form-label">Keyword</label>
-              <input className="form-control" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="e.g. React, Node.js" />
+              <label className="form-label small fw-bold">Keyword</label>
+              <input className="form-control" value={keyword} onChange={e => setKeyword(e.target.value)} placeholder="e.g. React, Sales, Finance" />
             </div>
             <div className="col-md-2">
-              <label className="form-label">Type</label>
-              <select className="form-select" value={type} onChange={e => setType(e.target.value)}>
-                <option value="">All</option>
-                <option value="full-time">Full-time</option>
-                <option value="part-time">Part-time</option>
-                <option value="contract">Contract</option>
-                <option value="internship">Internship</option>
-                <option value="freelance">Freelance</option>
-              </select>
-            </div>
-            <div className="col-md-2">
-              <label className="form-label">Remote</label>
-              <select className="form-select" value={remote} onChange={e => setRemote(e.target.value)}>
-                <option value="">All</option>
-                <option value="remote">Remote</option>
-                <option value="hybrid">Hybrid</option>
-                <option value="onsite">Onsite</option>
-              </select>
-            </div>
-            <div className="col-md-2">
-              <label className="form-label">Location</label>
-              <input className="form-control" value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. New York" />
-            </div>
-            <div className="col-md-1">
-              <label className="form-label">Source</label>
-              <select className="form-select" value={source} onChange={e => setSource(e.target.value)}>
-                {sources.map(s => (
-                  <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+              <label className="form-label small fw-bold">Category</label>
+              <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
+                {categories.map(c => (
+                  <option key={c} value={c}>{c === 'all' ? 'All Categories' : c}</option>
                 ))}
               </select>
             </div>
             <div className="col-md-2">
+              <label className="form-label small fw-bold">Seniority</label>
+              <select className="form-select" value={experienceLevel} onChange={e => setExperienceLevel(e.target.value)}>
+                <option value="all">All Levels</option>
+                <option value="entry-level">Entry-level / Intern</option>
+                <option value="junior">Junior</option>
+                <option value="mid-level">Mid-level</option>
+                <option value="senior">Senior</option>
+                <option value="lead">Lead / Manager</option>
+                <option value="executive">Executive / Director</option>
+              </select>
+            </div>
+            <div className="col-md-2">
+              <label className="form-label small fw-bold">Sort By</label>
+              <select className="form-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                <option value="newest">Newest First</option>
+                <option value="relevance">Best Relevance</option>
+                <option value="salary-desc">Highest Salary</option>
+                <option value="salary-asc">Lowest Salary</option>
+                <option value="oldest">Oldest First</option>
+              </select>
+            </div>
+            <div className="col-md-2">
               <button type="submit" className="btn btn-primary w-100" disabled={loading}>
-                {loading ? 'Searching...' : 'Search'}
+                {loading ? 'Searching...' : '🔍 Search'}
+              </button>
+            </div>
+            <div className="col-md-1">
+              <button 
+                type="button" 
+                className={`btn w-100 ${showAdvanced ? 'btn-secondary' : 'btn-outline-secondary'}`}
+                onClick={() => setShowAdvanced(!showAdvanced)}
+                title="Toggle Advanced Filters"
+              >
+                {showAdvanced ? '▲ Less' : '⚙ Filters'}
               </button>
             </div>
           </div>
+
+          {/* Advanced Filter Collapse */}
+          {showAdvanced && (
+            <div className="mt-3 pt-3 border-top">
+              <div className="row g-2 align-items-end">
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Employment Type</label>
+                  <select className="form-select" value={type} onChange={e => setType(e.target.value)}>
+                    <option value="">All Types</option>
+                    <option value="full-time">Full-time</option>
+                    <option value="part-time">Part-time</option>
+                    <option value="contract">Contract</option>
+                    <option value="internship">Internship</option>
+                    <option value="freelance">Freelance</option>
+                  </select>
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Work Mode</label>
+                  <select className="form-select" value={remote} onChange={e => setRemote(e.target.value)}>
+                    <option value="">All Modes</option>
+                    <option value="remote">Remote Only</option>
+                    <option value="hybrid">Hybrid</option>
+                    <option value="onsite">Onsite Only</option>
+                  </select>
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Location</label>
+                  <input className="form-control" value={location} onChange={e => setLocation(e.target.value)} placeholder="City / State" />
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Country</label>
+                  <input className="form-control" value={country} onChange={e => setCountry(e.target.value)} placeholder="e.g. Germany, USA" />
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Company</label>
+                  <input className="form-control" value={company} onChange={e => setCompany(e.target.value)} placeholder="Company name" />
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Source</label>
+                  <select className="form-select" value={source} onChange={e => setSource(e.target.value)}>
+                    {sources.map(s => (
+                      <option key={s} value={s}>{s === 'all' ? 'All Sources' : s.toUpperCase()}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div className="row g-2 align-items-end mt-1">
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Min Salary ($/yr)</label>
+                  <input type="number" className="form-control" value={minSalary} onChange={e => setMinSalary(e.target.value)} placeholder="e.g. 60000" />
+                </div>
+                <div className="col-md-2">
+                  <label className="form-label small fw-bold">Max Salary ($/yr)</label>
+                  <input type="number" className="form-control" value={maxSalary} onChange={e => setMaxSalary(e.target.value)} placeholder="e.g. 150000" />
+                </div>
+                <div className="col-md-2">
+                  <button type="button" className="btn btn-outline-danger w-100" onClick={handleResetFilters}>
+                    ✕ Clear Filters
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </form>
       )}
 
@@ -300,10 +405,21 @@ function Jobs() {
                     {savedIds.has(job._id) ? '★' : '☆'}
                   </button>
                 </div>
-                <div className="d-flex gap-2 mt-2 flex-wrap">
-                  <span className="badge bg-primary">{job.type}</span>
+                <div className="d-flex gap-2 mt-2 flex-wrap align-items-center">
+                  <span className="badge bg-secondary">{job.category || 'Other'}</span>
+                  <span className="badge bg-primary text-capitalize">{job.type}</span>
                   {remoteBadge(job.remote)}
-                  {formatSalary(job.salary) && <span className="badge bg-info text-dark">{formatSalary(job.salary)}</span>}
+                  {job.experienceLevel && job.experienceLevel !== 'not-specified' && (
+                    <span className="badge bg-dark text-capitalize">{job.experienceLevel}</span>
+                  )}
+                  {formatSalary(job.salary) ? (
+                    <span className="badge bg-info text-dark">{formatSalary(job.salary)}</span>
+                  ) : (
+                    <span className="badge bg-light text-muted border">Salary unavailable</span>
+                  )}
+                  {job.country && (
+                    <span className="badge bg-light text-dark border">📍 {job.country}</span>
+                  )}
                 </div>
                 {job.skills && job.skills.length > 0 && (
                   <div className="mt-2">
@@ -330,13 +446,65 @@ function Jobs() {
                 <button className="btn btn-sm btn-outline-secondary" onClick={() => { setSelectedJob(null); setMatchResult(null); setTailoredResume(null); }}>✕</button>
               </div>
               <div className="card-body" style={{ maxHeight: '75vh', overflowY: 'auto' }}>
-                <p className="lead mb-1">{selectedJob.company}</p>
-                <p className="text-muted">{selectedJob.location || 'N/A'}</p>
+                {/* Structured Job Meta Summary Card */}
+                <div className="card bg-light border-0 mb-3">
+                  <div className="card-body p-3">
+                    <div className="row g-2 small">
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Role:</span>
+                        <strong className="text-dark">{selectedJob.title || 'Unavailable'}</strong>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Company:</span>
+                        <strong className="text-dark">{selectedJob.company || 'Unavailable'}</strong>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Location:</span>
+                        <span>{selectedJob.location || 'Unavailable'} {selectedJob.country ? `(${selectedJob.country})` : ''}</span>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Category:</span>
+                        <span className="badge bg-secondary">{selectedJob.category || 'Other'}</span>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Employment Type:</span>
+                        <span className="badge bg-primary text-capitalize">{selectedJob.type || 'Unavailable'}</span>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Work Mode:</span>
+                        {remoteBadge(selectedJob.remote)}
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Seniority:</span>
+                        <strong className="text-capitalize">{selectedJob.experienceLevel && selectedJob.experienceLevel !== 'not-specified' ? selectedJob.experienceLevel : 'Not specified'}</strong>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Salary:</span>
+                        <strong>{formatSalary(selectedJob.salary) || 'Salary unavailable'}</strong>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Date Posted:</span>
+                        <span>{selectedJob.postedAt ? new Date(selectedJob.postedAt).toLocaleDateString() : 'Unavailable'}</span>
+                      </div>
+                      <div className="col-sm-6">
+                        <span className="text-muted d-block">Source:</span>
+                        <span className="badge bg-dark text-uppercase">{selectedJob.source || 'Unavailable'}</span>
+                      </div>
+                    </div>
 
-                <div className="d-flex gap-2 mb-3 flex-wrap">
-                  <span className="badge bg-primary">{selectedJob.type}</span>
-                  {remoteBadge(selectedJob.remote)}
-                  {formatSalary(selectedJob.salary) && <span className="badge bg-info text-dark">{formatSalary(selectedJob.salary)}</span>}
+                    {(selectedJob.sourceUrl || selectedJob.url) && (
+                      <div className="mt-2 pt-2 border-top">
+                        <a 
+                          href={selectedJob.sourceUrl || selectedJob.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="btn btn-sm btn-outline-primary"
+                        >
+                          🔗 Open Original Job Listing ↗
+                        </a>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Action Buttons: AI Match & Tailor Resume */}
@@ -522,16 +690,16 @@ function Jobs() {
                   )}
                 </div>
 
-                <h6>Description</h6>
-                <p style={{ whiteSpace: 'pre-line' }}>{selectedJob.description}</p>
+                <h6>Job Description</h6>
+                <p style={{ whiteSpace: 'pre-line' }}>{selectedJob.description || <span className="text-muted small fst-italic">Description unavailable.</span>}</p>
 
-                {selectedJob.requirements && selectedJob.requirements.length > 0 && (
-                  <>
-                    <h6>Requirements</h6>
-                    <ul>
-                      {selectedJob.requirements.map((r, i) => <li key={i}>{r}</li>)}
-                    </ul>
-                  </>
+                <h6>Requirements</h6>
+                {selectedJob.requirements && selectedJob.requirements.length > 0 ? (
+                  <ul>
+                    {selectedJob.requirements.map((r, i) => <li key={i}>{r}</li>)}
+                  </ul>
+                ) : (
+                  <p className="text-muted small fst-italic">Requirements were not specified in the original posting.</p>
                 )}
 
                 {selectedJob.skills && selectedJob.skills.length > 0 && (
