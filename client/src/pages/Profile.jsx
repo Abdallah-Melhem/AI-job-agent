@@ -78,14 +78,22 @@ function Profile() {
     }
   };
 
-  if (loading) return <div className="container mt-5">Loading profile...</div>;
+  if (loading) {
+    return (
+      <div className="state-loading">
+        <div className="spinner-border text-primary" role="status" />
+        <p className="mt-2 text-muted">Loading candidate profile...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-5 mb-5">
+    <>
       <Navbar />
-      <div className="card shadow-sm">
-        <div className="card-header bg-white d-flex justify-content-between align-items-center">
-          <h3 className="mb-0">Candidate Profile</h3>
+      <div className="app-container">
+        <div className="card shadow-sm border-0">
+          <div className="card-header bg-white d-flex justify-content-between align-items-center">
+            <h4 className="mb-0">👤 Candidate Profile</h4>
           <Link to="/cv" className="btn btn-sm btn-outline-primary">Import / Parse from CV</Link>
         </div>
         <div className="card-body p-4">
@@ -237,7 +245,8 @@ function Profile() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }
 
 export default Profile;

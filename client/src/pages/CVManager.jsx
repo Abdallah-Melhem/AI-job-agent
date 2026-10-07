@@ -225,11 +225,23 @@ function CVManager() {
     }
   };
 
-  if (loading) return <div className="container mt-5">Loading CVs...</div>;
+  if (loading) {
+    return (
+      <div className="state-loading">
+        <div className="spinner-border text-primary" role="status" />
+        <p className="mt-2 text-muted">Loading CVs and resumes...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="container mt-5 mb-5">
+    <>
       <Navbar />
+      <div className="app-container">
+        <div className="mb-4">
+          <h3 className="mb-1">📄 CV & Resume Documents</h3>
+          <p className="text-muted small mb-0">Upload master CVs, run structured text extraction, and review extracted profile data.</p>
+        </div>
 
       {/* Upload Section */}
       <div className="card shadow-sm mb-4">
@@ -261,7 +273,13 @@ function CVManager() {
         </div>
         <div className="card-body p-4">
           {cvs.length === 0 ? (
-            <p className="text-muted mb-0">You haven't uploaded any CVs yet.</p>
+            <div className="state-empty my-1 border-0">
+              <span className="state-empty-icon">📁</span>
+              <h6 className="state-empty-title">No CV documents uploaded yet</h6>
+              <p className="state-empty-text">
+                Upload your primary PDF or DOCX resume above. The parser will extract your experience, skills, and education for automated job matching.
+              </p>
+            </div>
           ) : (
             <ul className="list-group">
               {cvs.map((cv) => (
@@ -600,7 +618,8 @@ function CVManager() {
         </div>
       )}
     </div>
-  );
+  </>
+);
 }
 
 export default CVManager;

@@ -64,15 +64,15 @@ function AgentDashboard() {
   };
 
   return (
-    <div className="container mt-5 mb-5">
+    <>
       <Navbar />
-
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="fw-bold mb-1">🤖 Autonomous AI Job Agent</h2>
-          <p className="text-muted mb-0">Give the AI agent high-level instructions to search, match, and tailor applications.</p>
+      <div className="app-container">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h3 className="fw-bold mb-1">🤖 Autonomous AI Job Agent</h3>
+            <p className="text-muted small mb-0">Give the AI agent high-level instructions to search, match, and tailor applications.</p>
+          </div>
         </div>
-      </div>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
@@ -239,7 +239,8 @@ function AgentDashboard() {
         </div>
       </div>
     </div>
-  );
+  </>
+);
 }
 
 export default AgentDashboard;

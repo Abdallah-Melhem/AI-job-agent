@@ -110,17 +110,18 @@ function Integrations() {
   };
 
   return (
-    <div className="container mt-5 mb-5">
+    <>
       <Navbar />
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2>Integrations & Toolkits</h2>
-          <p className="text-muted mb-0">
-            Connect external tools via <strong>Composio Platform</strong> to empower your AI Agent with GitHub, Gmail, and developer APIs.
-          </p>
+      <div className="app-container">
+        <div className="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+          <div>
+            <h3 className="mb-1">🔌 Integrations & External Toolkits</h3>
+            <p className="text-muted small mb-0">
+              Connect verified third-party tools via <strong>Composio Platform</strong> to empower your AI Agent with GitHub, Gmail, and developer APIs.
+            </p>
+          </div>
+          <span className="badge bg-primary px-3 py-2">Composio SDK Ready</span>
         </div>
-        <span className="badge bg-primary px-3 py-2">Composio SDK Ready</span>
-      </div>
 
       {message && (
         <div className={`alert ${message.includes('Error') ? 'alert-danger' : 'alert-success'} alert-dismissible`}>
@@ -254,7 +255,8 @@ function Integrations() {
         </div>
       )}
     </div>
-  );
+  </>
+);
 }
 
 export default Integrations;

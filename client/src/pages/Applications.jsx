@@ -352,9 +352,12 @@ export default function Applications() {
   return (
     <>
       <Navbar />
-      <div className="container-fluid py-4">
+      <div className="app-container">
         <div className="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-          <h4 className="mb-0">📋 Application Tracker</h4>
+          <div>
+            <h3 className="mb-1">📋 Application Pipeline Tracker</h3>
+            <p className="text-muted small mb-0">Track application stages, attach notes, verify tailored resumes, and monitor candidate submissions.</p>
+          </div>
           <button className="btn btn-outline-primary btn-sm" onClick={() => navigate('/jobs')}>
             ← Browse Jobs
           </button>

@@ -217,22 +217,30 @@ function Jobs() {
   };
 
   return (
-    <div className="container mt-5 mb-5">
+    <>
       <Navbar />
+      <div className="app-container">
+        {/* Header Title */}
+        <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <div>
+            <h3 className="mb-1">🔍 Find & Match Jobs</h3>
+            <p className="text-muted small mb-0">Search live opportunities, calculate hybrid match scores, and generate tailored ATS resumes.</p>
+          </div>
+        </div>
 
-      {/* Tabs */}
-      <ul className="nav nav-tabs mb-4">
-        <li className="nav-item">
-          <button className={`nav-link ${tab === 'search' ? 'active' : ''}`} onClick={() => setTab('search')}>
-            Job Search
-          </button>
-        </li>
-        <li className="nav-item">
-          <button className={`nav-link ${tab === 'saved' ? 'active' : ''}`} onClick={() => setTab('saved')}>
-            Saved Jobs
-          </button>
-        </li>
-      </ul>
+        {/* Tabs */}
+        <ul className="nav nav-pills mb-4 bg-light p-1 rounded border d-inline-flex">
+          <li className="nav-item">
+            <button className={`nav-link py-2 px-3 fw-semibold ${tab === 'search' ? 'active shadow-sm' : ''}`} onClick={() => setTab('search')}>
+              Live Search
+            </button>
+          </li>
+          <li className="nav-item">
+            <button className={`nav-link py-2 px-3 fw-semibold ${tab === 'saved' ? 'active shadow-sm' : ''}`} onClick={() => setTab('saved')}>
+              Saved Jobs ({savedIds.size})
+            </button>
+          </li>
+        </ul>
 
       {message && <div className="alert alert-danger">{message}</div>}
 
@@ -357,10 +365,30 @@ function Jobs() {
       )}
 
       {/* Results */}
-      {loading && <p className="text-center text-muted">Loading jobs...</p>}
+      {loading && (
+        <div className="state-loading">
+          <div className="spinner-border text-primary" role="status" />
+          <p className="mt-2 text-muted fw-medium">Searching live jobs across adapters...</p>
+        </div>
+      )}
 
       {!loading && jobs.length === 0 && (
-        <p className="text-center text-muted">{tab === 'search' ? 'No jobs found. Try different filters.' : 'You have no saved jobs yet.'}</p>
+        <div className="state-empty">
+          <span className="state-empty-icon">🔎</span>
+          <h5 className="state-empty-title">
+            {tab === 'search' ? 'No matching jobs found' : 'No saved jobs yet'}
+          </h5>
+          <p className="state-empty-text">
+            {tab === 'search'
+              ? 'Try widening your filters, adjusting keywords, or clearing specific location constraints.'
+              : 'Save jobs from your search results to easily track and revisit them later.'}
+          </p>
+          {tab === 'search' && (
+            <button type="button" className="btn btn-sm btn-outline-primary" onClick={handleResetFilters}>
+              Reset Filters
+            </button>
+          )}
+        </div>
       )}
 
       <div className="row">
@@ -369,52 +397,49 @@ function Jobs() {
           {jobs.map(job => (
             <div
               key={job._id}
-              className={`card mb-3 shadow-sm ${selectedJob?._id === job._id ? 'border-primary' : ''}`}
-              style={{ cursor: 'pointer' }}
+              className={`job-item-card mb-3 ${selectedJob?._id === job._id ? 'is-selected' : ''}`}
               onClick={() => handleSelectJob(job)}
             >
-              <div className="card-body">
-                <div className="d-flex justify-content-between align-items-start">
-                  <div>
-                    <h5 className="card-title mb-1">{job.title}</h5>
-                    <p className="text-muted mb-1">{job.company} — {job.location || 'N/A'}</p>
-                  </div>
-                  <button
-                    className={`btn btn-sm ${savedIds.has(job._id) ? 'btn-warning' : 'btn-outline-warning'}`}
-                    onClick={(e) => { e.stopPropagation(); handleToggleSave(job._id); }}
-                    title={savedIds.has(job._id) ? 'Unsave' : 'Save'}
-                  >
-                    {savedIds.has(job._id) ? '★' : '☆'}
-                  </button>
+              <div className="d-flex justify-content-between align-items-start">
+                <div>
+                  <h5 className="card-title mb-1">{job.title}</h5>
+                  <p className="text-muted mb-1">{job.company} — {job.location || 'N/A'}</p>
                 </div>
-                <div className="d-flex gap-2 mt-2 flex-wrap align-items-center">
-                  <span className="badge bg-secondary">{job.category || 'Other'}</span>
-                  <span className="badge bg-primary text-capitalize">{job.type}</span>
-                  {remoteBadge(job.remote)}
-                  {job.experienceLevel && job.experienceLevel !== 'not-specified' && (
-                    <span className="badge bg-dark text-capitalize">{job.experienceLevel}</span>
-                  )}
-                  {formatSalary(job.salary) ? (
-                    <span className="badge bg-info text-dark">{formatSalary(job.salary)}</span>
-                  ) : (
-                    <span className="badge bg-light text-muted border">Salary unavailable</span>
-                  )}
-                  {job.country && (
-                    <span className="badge bg-light text-dark border">📍 {job.country}</span>
-                  )}
-                </div>
-                {job.skills && job.skills.length > 0 && (
-                  <div className="mt-2">
-                    {job.skills.slice(0, 5).map((s, i) => (
-                      <span key={i} className="badge bg-light text-dark border me-1">{s}</span>
-                    ))}
-                    {job.skills.length > 5 && <span className="text-muted small">+{job.skills.length - 5} more</span>}
-                  </div>
-                )}
-                <small className="text-muted d-block mt-2">
-                  Posted: {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : 'N/A'} | Source: {job.source}
-                </small>
+                <button
+                  className={`btn btn-sm ${savedIds.has(job._id) ? 'btn-warning' : 'btn-outline-warning'}`}
+                  onClick={(e) => { e.stopPropagation(); handleToggleSave(job._id); }}
+                  title={savedIds.has(job._id) ? 'Unsave' : 'Save'}
+                >
+                  {savedIds.has(job._id) ? '★' : '☆'}
+                </button>
               </div>
+              <div className="d-flex gap-2 mt-2 flex-wrap align-items-center">
+                <span className="badge bg-secondary">{job.category || 'Other'}</span>
+                <span className="badge bg-primary text-capitalize">{job.type}</span>
+                {remoteBadge(job.remote)}
+                {job.experienceLevel && job.experienceLevel !== 'not-specified' && (
+                  <span className="badge bg-dark text-capitalize">{job.experienceLevel}</span>
+                )}
+                {formatSalary(job.salary) ? (
+                  <span className="badge bg-info text-dark">{formatSalary(job.salary)}</span>
+                ) : (
+                  <span className="badge bg-light text-muted border">Salary unavailable</span>
+                )}
+                {job.country && (
+                  <span className="badge bg-light text-dark border">📍 {job.country}</span>
+                )}
+              </div>
+              {job.skills && job.skills.length > 0 && (
+                <div className="mt-2">
+                  {job.skills.slice(0, 5).map((s, i) => (
+                    <span key={i} className="badge bg-light text-dark border me-1">{s}</span>
+                  ))}
+                  {job.skills.length > 5 && <span className="text-muted small">+{job.skills.length - 5} more</span>}
+                </div>
+              )}
+              <small className="text-muted d-block mt-2">
+                Posted: {job.postedAt ? new Date(job.postedAt).toLocaleDateString() : 'N/A'} | Source: {job.source}
+              </small>
             </div>
           ))}
         </div>
@@ -789,7 +814,8 @@ function Jobs() {
         </nav>
       )}
     </div>
-  );
+  </>
+);
 }
 
 export default Jobs;

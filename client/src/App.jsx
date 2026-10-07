@@ -11,6 +11,7 @@ import Jobs from './pages/Jobs';
 import AgentDashboard from './pages/AgentDashboard';
 import Integrations from './pages/Integrations';
 import Applications from './pages/Applications';
+import Settings from './pages/Settings';
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
           <Route path="/agent" element={<AgentDashboard />} />
           <Route path="/integrations" element={<Integrations />} />
           <Route path="/applications" element={<Applications />} />
+          <Route path="/settings" element={<Settings />} />
         </Routes>
       </Router>
     </AuthProvider>
