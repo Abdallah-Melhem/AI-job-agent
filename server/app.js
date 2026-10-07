@@ -68,8 +68,8 @@ app.use('/api/auth', strictLimiter);
 app.use('/api/ai', strictLimiter);
 app.use('/api/agent', strictLimiter);
 
-// Static files (needs careful exposure)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// Static files: Only serve tailored generated outputs, NOT raw user uploaded CVs
+app.use('/uploads/tailored', express.static(path.join(__dirname, '..', 'uploads', 'tailored')));
 
 // Routes
 app.get('/api/health', (req, res) => {

@@ -61,6 +61,25 @@ function CVManager() {
     }
   };
 
+  const handleDownload = async (cv) => {
+    try {
+      setMessage('Downloading...');
+      const response = await api.get(`/cv/${cv._id}/download`, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: cv.mimetype || 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', cv.originalName);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      setMessage('');
+    } catch (err) {
+      setMessage(err.response?.data?.message || 'Error downloading CV');
+    }
+  };
+
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this CV?')) return;
     try {
@@ -82,25 +101,35 @@ function CVManager() {
       setSaveSuccess('');
       const response = await api.post(`/cv/${cv._id}/parse`);
       const extracted = response.data.data;
+      const isScanned = Boolean(response.data.isScanned);
+      const warningMsg = response.data.warning || (isScanned ? response.data.message : '');
+
+      if (isScanned) {
+        setMessage(warningMsg);
+      }
 
       // Initialize review form with extracted data
       setParsedReview({
         cvId: cv._id,
         originalName: cv.originalName,
-        candidateName: extracted.name || '',
-        phone: extracted.contact?.phone || '',
-        location: extracted.contact?.location || '',
+        candidateName: extracted.name || extracted.personalInfo?.name || '',
+        phone: extracted.contact?.phone || extracted.personalInfo?.phone || '',
+        location: extracted.contact?.location || extracted.personalInfo?.location || '',
+        summary: extracted.summary || extracted.personalInfo?.summary || '',
+        isScanned: isScanned,
+        warning: warningMsg,
         links: {
-          linkedin: extracted.contact?.links?.linkedin || '',
-          github: extracted.contact?.links?.github || '',
-          portfolio: extracted.contact?.links?.portfolio || ''
+          linkedin: extracted.contact?.links?.linkedin || extracted.personalInfo?.links?.linkedin || '',
+          github: extracted.contact?.links?.github || extracted.personalInfo?.links?.github || '',
+          portfolio: extracted.contact?.links?.portfolio || extracted.personalInfo?.links?.portfolio || ''
         },
         skills: extracted.skills ? extracted.skills.join(', ') : '',
         languages: extracted.languages ? extracted.languages.join(', ') : '',
         education: extracted.education || [],
         experience: extracted.experience || [],
         projects: extracted.projects || [],
-        certifications: extracted.certifications ? extracted.certifications.join(', ') : ''
+        certifications: extracted.certifications ? extracted.certifications.join(', ') : '',
+        achievements: extracted.achievements ? extracted.achievements.join(', ') : ''
       });
     } catch (err) {
       setMessage(err.response?.data?.message || 'Failed to parse CV');
@@ -178,10 +207,12 @@ function CVManager() {
       const payload = {
         phone: parsedReview.phone,
         location: parsedReview.location,
+        summary: parsedReview.summary,
         links: parsedReview.links,
         skills: parsedReview.skills ? parsedReview.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
         languages: parsedReview.languages ? parsedReview.languages.split(',').map(l => l.trim()).filter(Boolean) : [],
         certifications: parsedReview.certifications ? parsedReview.certifications.split(',').map(c => c.trim()).filter(Boolean) : [],
+        achievements: parsedReview.achievements ? parsedReview.achievements.split(',').map(a => a.trim()).filter(Boolean) : [],
         education: parsedReview.education,
         experience: parsedReview.experience,
         projects: parsedReview.projects
@@ -209,12 +240,12 @@ function CVManager() {
           {message && <div className={`alert ${message.includes('Error') || message.includes('Failed') ? 'alert-danger' : 'alert-info'}`}>{message}</div>}
           <form onSubmit={handleUpload}>
             <div className="mb-3">
-              <label className="form-label">Select CV File (PDF or DOCX, max 5MB)</label>
+              <label className="form-label">Select CV File (PDF, DOCX, TXT, or RTF, max 5MB)</label>
               <input 
                 id="cv-upload-input"
                 type="file" 
                 className="form-control" 
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" 
+                accept=".pdf,.doc,.docx,.txt,.rtf,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,application/rtf,text/rtf" 
                 onChange={handleFileChange} 
               />
             </div>
@@ -250,14 +281,12 @@ function CVManager() {
                     >
                       {parsingId === cv._id ? 'Parsing CV...' : 'Parse CV'}
                     </button>
-                    <a 
-                      href={`${FILE_BASE_URL}${cv.path}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
+                    <button 
                       className="btn btn-sm btn-outline-primary me-2"
+                      onClick={() => handleDownload(cv)}
                     >
                       Download / View
-                    </a>
+                    </button>
                     <button 
                       className="btn btn-sm btn-outline-danger" 
                       onClick={() => handleDelete(cv._id)}
@@ -288,6 +317,12 @@ function CVManager() {
               <div className="alert alert-success d-flex justify-content-between align-items-center">
                 <span>{saveSuccess}</span>
                 <Link to="/profile" className="btn btn-sm btn-primary">View Candidate Profile</Link>
+              </div>
+            )}
+
+            {parsedReview.isScanned && (
+              <div className="alert alert-warning mb-3">
+                <strong>⚠️ Scanned / Image Document Notice:</strong> {parsedReview.warning || 'Scanned or image-only PDF detected (no text layer). OCR is not enabled. Please enter your information manually below or upload a text-based document.'}
               </div>
             )}
 
@@ -328,6 +363,19 @@ function CVManager() {
                 </div>
               </div>
 
+              {/* Professional Summary */}
+              <h5 className="border-bottom pb-2 mb-3">Professional Summary</h5>
+              <div className="mb-3">
+                <textarea
+                  className="form-control"
+                  name="summary"
+                  rows="3"
+                  value={parsedReview.summary || ''}
+                  onChange={handleReviewChange}
+                  placeholder="Overview of professional background, expertise, and objectives..."
+                />
+              </div>
+
               {/* Links */}
               <h5 className="border-bottom pb-2 mb-3">Online Presence / Links</h5>
               <div className="row mb-3">
@@ -364,7 +412,7 @@ function CVManager() {
               </div>
 
               {/* Skills & Languages */}
-              <h5 className="border-bottom pb-2 mb-3">Skills & Languages</h5>
+              <h5 className="border-bottom pb-2 mb-3">Skills, Languages & Achievements</h5>
               <div className="mb-3">
                 <label className="form-label">Skills (comma separated)</label>
                 <textarea
@@ -394,6 +442,17 @@ function CVManager() {
                     name="certifications"
                     value={parsedReview.certifications}
                     onChange={handleReviewChange}
+                  />
+                </div>
+                <div className="col-md-12 mb-2">
+                  <label className="form-label">Key Achievements & Awards (comma separated)</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    name="achievements"
+                    value={parsedReview.achievements || ''}
+                    onChange={handleReviewChange}
+                    placeholder="e.g. Dean's List 2024, Hackathon Winner, Published Researcher"
                   />
                 </div>
               </div>

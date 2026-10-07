@@ -9,9 +9,11 @@ function Profile() {
   const [profile, setProfile] = useState({
     phone: '',
     location: '',
+    summary: '',
     skills: '',
     languages: '',
     certifications: '',
+    achievements: '',
     links: { linkedin: '', github: '', portfolio: '' },
     education: [],
     experience: [],
@@ -27,9 +29,11 @@ function Profile() {
         if (data) {
           setProfile({
             ...data,
+            summary: data.summary || '',
             skills: data.skills ? data.skills.join(', ') : '',
             languages: data.languages ? data.languages.join(', ') : '',
             certifications: data.certifications ? data.certifications.join(', ') : '',
+            achievements: data.achievements ? data.achievements.join(', ') : '',
             links: data.links || { linkedin: '', github: '', portfolio: '' },
             education: data.education || [],
             experience: data.experience || [],
@@ -61,9 +65,11 @@ function Profile() {
     try {
       const payload = {
         ...profile,
+        summary: profile.summary || '',
         skills: profile.skills ? profile.skills.split(',').map(s => s.trim()).filter(Boolean) : [],
         languages: profile.languages ? profile.languages.split(',').map(l => l.trim()).filter(Boolean) : [],
-        certifications: profile.certifications ? profile.certifications.split(',').map(c => c.trim()).filter(Boolean) : []
+        certifications: profile.certifications ? profile.certifications.split(',').map(c => c.trim()).filter(Boolean) : [],
+        achievements: profile.achievements ? profile.achievements.split(',').map(a => a.trim()).filter(Boolean) : []
       };
       await api.post('/profile', payload);
       setMessage('Profile saved successfully!');
@@ -98,6 +104,18 @@ function Profile() {
               </div>
             </div>
 
+            <div className="mb-3">
+              <label className="form-label">Professional Summary</label>
+              <textarea 
+                className="form-control" 
+                name="summary" 
+                value={profile.summary || ''} 
+                onChange={handleChange} 
+                rows="3" 
+                placeholder="Brief summary of your professional background, core expertise, and career goals..." 
+              />
+            </div>
+
             <h5 className="mt-4 mb-3 border-bottom pb-2">Online Profiles & Links</h5>
             <div className="row mb-3">
               <div className="col-md-4 mb-2">
@@ -114,12 +132,12 @@ function Profile() {
               </div>
             </div>
 
-            <h5 className="mt-4 mb-3 border-bottom pb-2">Skills, Languages & Certifications</h5>
+            <h5 className="mt-4 mb-3 border-bottom pb-2">Skills, Languages, Certifications & Achievements</h5>
             <div className="mb-3">
               <label className="form-label">Skills (comma separated)</label>
               <textarea className="form-control" name="skills" value={profile.skills || ''} onChange={handleChange} rows="2" />
             </div>
-            <div className="row mb-4">
+            <div className="row mb-3">
               <div className="col-md-6 mb-2">
                 <label className="form-label">Languages (comma separated)</label>
                 <input type="text" className="form-control" name="languages" value={profile.languages || ''} onChange={handleChange} />
@@ -128,6 +146,17 @@ function Profile() {
                 <label className="form-label">Certifications (comma separated)</label>
                 <input type="text" className="form-control" name="certifications" value={profile.certifications || ''} onChange={handleChange} />
               </div>
+            </div>
+            <div className="mb-4">
+              <label className="form-label">Key Achievements & Honors (comma separated)</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                name="achievements" 
+                value={profile.achievements || ''} 
+                onChange={handleChange} 
+                placeholder="e.g. Employee of the Year 2025, Open Source Contributor, AWS Community Builder" 
+              />
             </div>
 
             {/* Education Summary */}

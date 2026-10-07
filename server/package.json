@@ -7,9 +7,9 @@
     "start": "node server.js",
     "dev": "node server.js",
     "worker": "node worker.js",
-    "test": "jest --testPathPatterns=tests/ --forceExit --detectOpenHandles",
-    "test:unit": "jest --testPathPatterns=tests/unit/ --forceExit",
-    "test:integration": "jest --testPathPatterns=tests/integration/ --forceExit --detectOpenHandles"
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/ --forceExit --detectOpenHandles",
+    "test:unit": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/unit/ --forceExit",
+    "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --testPathPatterns=tests/integration/ --forceExit --detectOpenHandles"
   },
   "jest": {
     "testEnvironment": "node",

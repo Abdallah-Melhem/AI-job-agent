@@ -8,7 +8,8 @@ const { combine, timestamp, printf, colorize, errors, json } = winston.format;
 const SENSITIVE_FIELDS = [
   'password', 'token', 'authorization', 'apiKey', 'api_key',
   'accessToken', 'refreshToken', 'secret', 'credential', 'cvContent',
-  'fullText', 'integrationToken', 'composioApiKey', 'jwtSecret',
+  'fullText', 'rawText', 'resumeText', 'cvText', 'cvPayload', 'rawCV',
+  'integrationToken', 'composioApiKey', 'jwtSecret',
   'cookie', 'mongodb_uri', 'mongo_uri', 'connectionstring', 'privatekey'
 ];
 

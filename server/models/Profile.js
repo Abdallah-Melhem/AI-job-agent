@@ -9,6 +9,8 @@ const profileSchema = new mongoose.Schema({
   },
   phone: String,
   location: String,
+  title: String,
+  summary: String,
   links: {
     linkedin: String,
     github: String,
@@ -36,6 +38,7 @@ const profileSchema = new mongoose.Schema({
   }],
   certifications: [String],
   languages: [String],
+  achievements: [String],
   preferences: {
     employmentTypes: [String],
     locations: [String],

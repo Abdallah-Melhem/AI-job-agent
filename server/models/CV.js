@@ -25,6 +25,14 @@ const cvSchema = new mongoose.Schema({
   path: {
     type: String,
     required: true
+  },
+  isScanned: {
+    type: Boolean,
+    default: false
+  },
+  parsedData: {
+    type: Object,
+    default: null
   }
 }, { timestamps: true });
 
