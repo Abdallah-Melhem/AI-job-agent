@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const CV = require('../models/CV');
 const { extractTextFromFile, parseResumeText } = require('../services/cvParser');
+const { sanitizeFilePath } = require('../utils/security');
 const logger = require('../utils/logger');
 
 // @desc    Upload a CV
@@ -74,14 +75,16 @@ const downloadCV = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized to access this CV' });
     }
 
-    const filePath = path.join(__dirname, '..', '..', cv.path);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'CV file missing on disk' });
+    const uploadBaseDir = path.join(__dirname, '..', '..', 'uploads');
+    const relativeName = path.basename(cv.path);
+    const filePath = sanitizeFilePath(uploadBaseDir, relativeName);
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'CV file missing or invalid on disk' });
     }
 
     res.setHeader('Content-Type', cv.mimetype || 'application/octet-stream');
     res.setHeader('Content-Disposition', `inline; filename="${encodeURIComponent(cv.originalName)}"`);
-    res.sendFile(path.resolve(filePath));
+    res.sendFile(filePath);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -104,8 +107,10 @@ const deleteCV = async (req, res) => {
     }
 
     // Remove file safely from filesystem
-    const filePath = path.join(__dirname, '..', '..', cv.path);
-    if (fs.existsSync(filePath)) {
+    const uploadBaseDir = path.join(__dirname, '..', '..', 'uploads');
+    const relativeName = path.basename(cv.path);
+    const filePath = sanitizeFilePath(uploadBaseDir, relativeName);
+    if (filePath && fs.existsSync(filePath)) {
       try {
         fs.unlinkSync(filePath);
       } catch (err) {
@@ -137,9 +142,11 @@ const parseCV = async (req, res) => {
       return res.status(401).json({ message: 'Not authorized' });
     }
 
-    const filePath = path.join(__dirname, '..', '..', cv.path);
-    if (!fs.existsSync(filePath)) {
-      return res.status(404).json({ message: 'CV file missing on disk' });
+    const uploadBaseDir = path.join(__dirname, '..', '..', 'uploads');
+    const relativeName = path.basename(cv.path);
+    const filePath = sanitizeFilePath(uploadBaseDir, relativeName);
+    if (!filePath || !fs.existsSync(filePath)) {
+      return res.status(404).json({ message: 'CV file missing or invalid on disk' });
     }
 
     // Extract text with format detection and scanned PDF check
