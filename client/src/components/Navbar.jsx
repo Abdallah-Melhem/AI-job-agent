@@ -1,9 +1,11 @@
 import React, { useContext, useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useTheme, THEMES } from '../context/ThemeContext';
 
 function Navbar() {
   const { user, logout } = useContext(AuthContext);
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -112,6 +114,34 @@ function Navbar() {
                     <span>⚙️</span>
                     <span>Settings</span>
                   </NavLink>
+                </li>
+                <li className="ms-md-2 mt-2 mt-md-0 d-flex align-items-center">
+                  <div className="theme-switcher-group" title="Select UI Theme">
+                    <button
+                      type="button"
+                      className={`theme-switcher-btn ${theme === THEMES.LIGHT ? 'is-active' : ''}`}
+                      onClick={() => setTheme(THEMES.LIGHT)}
+                      aria-label="Light Theme"
+                    >
+                      ☀️ Light
+                    </button>
+                    <button
+                      type="button"
+                      className={`theme-switcher-btn ${theme === THEMES.DARK ? 'is-active' : ''}`}
+                      onClick={() => setTheme(THEMES.DARK)}
+                      aria-label="Dark Theme"
+                    >
+                      🌙 Dark
+                    </button>
+                    <button
+                      type="button"
+                      className={`theme-switcher-btn ${theme === THEMES.PURPLE ? 'is-active' : ''}`}
+                      onClick={() => setTheme(THEMES.PURPLE)}
+                      aria-label="Purple Theme"
+                    >
+                      💜 Purple
+                    </button>
+                  </div>
                 </li>
                 <li className="ms-md-2 mt-2 mt-md-0">
                   <button

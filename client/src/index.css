@@ -1,23 +1,39 @@
-/* ─── AI Job Agent - Professional UI / UX System ─── */
+/* ─── AI Job Agent - Unified Multi-Theme System (Light / Dark / Purple) ─── */
 
-:root {
-  /* Surface & Brand Tokens */
+/* ── 1. Default (Light Theme) Tokens ── */
+:root,
+[data-theme="light"] {
+  --theme-name: 'light';
+
+  /* Surface & Backgrounds */
   --bg-app: #f8fafc;
   --bg-card: #ffffff;
   --bg-subtle: #f1f5f9;
   --bg-hover: #e2e8f0;
-  
+  --bg-navbar: rgba(255, 255, 255, 0.95);
+  --bg-input: #ffffff;
+  --bg-modal: #ffffff;
+  --bg-table-header: #f8fafc;
+  --bg-table-hover: #f1f5f9;
+
+  /* Borders */
   --border-color: #e2e8f0;
   --border-focus: #3b82f6;
 
+  /* Typography */
   --text-main: #0f172a;
   --text-muted: #64748b;
   --text-subtle: #94a3b8;
+  --text-heading: #0f172a;
+  --text-inverse: #ffffff;
 
+  /* Primary Brand (Royal Blue) */
   --brand-primary: #2563eb;
   --brand-primary-hover: #1d4ed8;
   --brand-primary-subtle: #eff6ff;
+  --brand-gradient: linear-gradient(135deg, #2563eb, #7c3aed);
 
+  /* Status Accents */
   --accent-success: #10b981;
   --accent-success-subtle: #ecfdf5;
   --accent-warning: #f59e0b;
@@ -27,7 +43,7 @@
   --accent-info: #0ea5e9;
   --accent-info-subtle: #f0f9ff;
 
-  /* Elevation */
+  /* Elevation Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
@@ -38,11 +54,106 @@
   --radius-lg: 14px;
   --radius-pill: 9999px;
 
-  /* Typography */
   --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
-/* ─── Base Reset & Layout ─── */
+/* ── 2. Dark Theme Tokens ── */
+[data-theme="dark"] {
+  --theme-name: 'dark';
+
+  /* Surface & Backgrounds */
+  --bg-app: #0f172a;
+  --bg-card: #1e293b;
+  --bg-subtle: #334155;
+  --bg-hover: #475569;
+  --bg-navbar: rgba(30, 41, 59, 0.95);
+  --bg-input: #1e293b;
+  --bg-modal: #1e293b;
+  --bg-table-header: #334155;
+  --bg-table-hover: #334155;
+
+  /* Borders */
+  --border-color: #334155;
+  --border-focus: #60a5fa;
+
+  /* Typography */
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-subtle: #64748b;
+  --text-heading: #f8fafc;
+  --text-inverse: #0f172a;
+
+  /* Primary Brand (Electric Blue) */
+  --brand-primary: #3b82f6;
+  --brand-primary-hover: #60a5fa;
+  --brand-primary-subtle: rgba(59, 130, 246, 0.18);
+  --brand-gradient: linear-gradient(135deg, #3b82f6, #818cf8);
+
+  /* Status Accents */
+  --accent-success: #34d399;
+  --accent-success-subtle: rgba(52, 211, 153, 0.15);
+  --accent-warning: #fbbf24;
+  --accent-warning-subtle: rgba(251, 191, 36, 0.15);
+  --accent-danger: #f87171;
+  --accent-danger-subtle: rgba(248, 113, 113, 0.15);
+  --accent-info: #38bdf8;
+  --accent-info-subtle: rgba(56, 189, 248, 0.15);
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.6), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+}
+
+/* ── 3. Purple Theme Tokens ── */
+[data-theme="purple"] {
+  --theme-name: 'purple';
+
+  /* Surface & Backgrounds */
+  --bg-app: #180d2b;
+  --bg-card: #261642;
+  --bg-subtle: #3a2263;
+  --bg-hover: #4e2e85;
+  --bg-navbar: rgba(38, 22, 66, 0.95);
+  --bg-input: #2d1a4e;
+  --bg-modal: #261642;
+  --bg-table-header: #3a2263;
+  --bg-table-hover: #3a2263;
+
+  /* Borders */
+  --border-color: #4a2d7a;
+  --border-focus: #c084fc;
+
+  /* Typography */
+  --text-main: #f5f3ff;
+  --text-muted: #c4b5fd;
+  --text-subtle: #a78bfa;
+  --text-heading: #ffffff;
+  --text-inverse: #180d2b;
+
+  /* Primary Brand (Vivid Purple / Violet) */
+  --brand-primary: #a855f7;
+  --brand-primary-hover: #c084fc;
+  --brand-primary-subtle: rgba(168, 85, 247, 0.22);
+  --brand-gradient: linear-gradient(135deg, #a855f7, #ec4899);
+
+  /* Status Accents */
+  --accent-success: #34d399;
+  --accent-success-subtle: rgba(52, 211, 153, 0.18);
+  --accent-warning: #fbbf24;
+  --accent-warning-subtle: rgba(251, 191, 36, 0.18);
+  --accent-danger: #f87171;
+  --accent-danger-subtle: rgba(248, 113, 113, 0.18);
+  --accent-info: #67e8f9;
+  --accent-info-subtle: rgba(103, 232, 249, 0.18);
+
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.6);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.6), 0 2px 4px -2px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.7), 0 4px 6px -4px rgb(0 0 0 / 0.5);
+}
+
+/* ─── Global Reset & Body ─── */
 body {
   margin: 0;
   padding: 0;
@@ -51,6 +162,7 @@ body {
   font-family: var(--font-family);
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {
@@ -59,9 +171,9 @@ body {
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg-app);
 }
 
-/* Container Polish */
 .app-container {
   max-width: 1320px;
   margin: 0 auto;
@@ -71,7 +183,7 @@ body {
 
 /* ─── Navigation Header ─── */
 .app-navbar {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-navbar);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
@@ -79,6 +191,7 @@ body {
   z-index: 1030;
   padding: 0.75rem 1.25rem;
   margin-bottom: 1.5rem;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .app-navbar-inner {
@@ -97,7 +210,7 @@ body {
   gap: 0.6rem;
   font-weight: 700;
   font-size: 1.15rem;
-  color: var(--text-main);
+  color: var(--text-heading);
   text-decoration: none;
 }
 
@@ -106,8 +219,8 @@ body {
 }
 
 .navbar-brand-icon {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  color: white;
+  background: var(--brand-gradient);
+  color: #ffffff;
   width: 34px;
   height: 34px;
   border-radius: 8px;
@@ -151,14 +264,15 @@ body {
   font-weight: 600;
 }
 
-/* ─── Typography & Utilities ─── */
+/* ─── Typography ─── */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--text-main);
+  color: var(--text-heading);
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 p {
+  color: var(--text-main);
   line-height: 1.55;
 }
 
@@ -166,13 +280,18 @@ p {
   color: var(--text-muted) !important;
 }
 
-/* ─── Cards ─── */
+.text-dark {
+  color: var(--text-heading) !important;
+}
+
+/* ─── Cards & Surfaces ─── */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  color: var(--text-main);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
 }
 
 .card:hover {
@@ -183,8 +302,26 @@ p {
   background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
   padding: 1rem 1.25rem;
+  color: var(--text-heading);
   border-top-left-radius: var(--radius-md) !important;
   border-top-right-radius: var(--radius-md) !important;
+}
+
+.card-body {
+  color: var(--text-main);
+}
+
+.card.bg-light,
+.bg-light {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-main) !important;
+  border-color: var(--border-color) !important;
+}
+
+.card-header.bg-white,
+.bg-white {
+  background-color: var(--bg-card) !important;
+  color: var(--text-heading) !important;
 }
 
 /* ─── Buttons ─── */
@@ -199,24 +336,102 @@ p {
 .btn-primary {
   background-color: var(--brand-primary);
   border-color: var(--brand-primary);
+  color: #ffffff;
 }
 
-.btn-primary:hover {
+.btn-primary:hover,
+.btn-primary:focus {
   background-color: var(--brand-primary-hover);
   border-color: var(--brand-primary-hover);
+  color: #ffffff;
 }
 
-/* ─── Form Controls ─── */
-.form-control, .form-select {
+.btn-outline-primary {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--brand-primary);
+  color: #ffffff;
+}
+
+.btn-outline-secondary {
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+.btn-outline-secondary:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+/* ─── Form Controls & Inputs ─── */
+.form-control,
+.form-select {
+  background-color: var(--bg-input);
+  color: var(--text-main);
   border-color: var(--border-color);
   border-radius: var(--radius-sm);
   font-size: 0.92rem;
   padding: 0.55rem 0.85rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 
-.form-control:focus, .form-select:focus {
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--bg-input);
+  color: var(--text-main);
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  box-shadow: 0 0 0 3px var(--brand-primary-subtle);
+}
+
+.form-control::placeholder {
+  color: var(--text-subtle);
+}
+
+.form-control:disabled,
+.form-control[readonly] {
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+  border-color: var(--border-color);
+}
+
+.form-label {
+  color: var(--text-main);
+}
+
+/* ─── Tables ─── */
+.table {
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.table > :not(caption) > * > * {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-bottom-color: var(--border-color);
+}
+
+.table-light,
+.table-light > th,
+.table-light > td {
+  background-color: var(--bg-table-header) !important;
+  color: var(--text-heading) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table-hover > tbody > tr:hover > * {
+  background-color: var(--bg-table-hover);
+  color: var(--text-main);
+}
+
+/* ─── Lists & Groups ─── */
+.list-group-item {
+  background-color: var(--bg-card);
+  color: var(--text-main);
+  border-color: var(--border-color);
 }
 
 /* ─── Badges ─── */
@@ -227,8 +442,15 @@ p {
   letter-spacing: 0.01em;
 }
 
-/* ─── Standard State Indicators ─── */
-.state-empty, .state-loading, .state-error {
+.badge.bg-light {
+  background-color: var(--bg-subtle) !important;
+  color: var(--text-main) !important;
+}
+
+/* ─── State Feedback Containers ─── */
+.state-empty,
+.state-loading,
+.state-error {
   text-align: center;
   padding: 3rem 1.5rem;
   border-radius: var(--radius-md);
@@ -246,7 +468,7 @@ p {
 .state-empty-title {
   font-size: 1.2rem;
   font-weight: 600;
-  color: var(--text-main);
+  color: var(--text-heading);
   margin-bottom: 0.35rem;
 }
 
@@ -257,7 +479,7 @@ p {
   font-size: 0.92rem;
 }
 
-/* ─── Job Cards Polish ─── */
+/* ─── Job Cards ─── */
 .job-item-card {
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
@@ -269,7 +491,7 @@ p {
 }
 
 .job-item-card:hover {
-  border-color: #93c5fd;
+  border-color: var(--brand-primary);
   box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
@@ -278,6 +500,58 @@ p {
   border-color: var(--brand-primary);
   background-color: var(--brand-primary-subtle);
   box-shadow: 0 0 0 2px var(--brand-primary);
+}
+
+/* ─── Nav Pills / Tabs ─── */
+.nav-pills {
+  background-color: var(--bg-subtle) !important;
+  border-color: var(--border-color) !important;
+}
+
+.nav-pills .nav-link {
+  color: var(--text-muted);
+}
+
+.nav-pills .nav-link.active {
+  background-color: var(--brand-primary) !important;
+  color: #ffffff !important;
+}
+
+/* ─── Theme Switcher Component in Navbar ─── */
+.theme-switcher-group {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  gap: 2px;
+}
+
+.theme-switcher-btn {
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--radius-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  font-weight: 500;
+}
+
+.theme-switcher-btn:hover {
+  color: var(--text-main);
+}
+
+.theme-switcher-btn.is-active {
+  background-color: var(--bg-card);
+  color: var(--brand-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
 }
 
 /* ─── Responsive Adjustments ─── */
