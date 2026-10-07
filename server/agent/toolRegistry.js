@@ -1,7 +1,12 @@
 /**
  * Tool Registry
+ * Phase 8: AI Agent and Controlled Tools
+ *
  * Manages all registered tools available to the AI agent.
+ * Enforces controlled registration and parameter schema definitions.
  */
+
+'use strict';
 
 class ToolRegistry {
   constructor() {
@@ -34,7 +39,7 @@ class ToolRegistry {
   }
 
   /**
-   * Return tools formatted for AI prompt system instructions or function calling
+   * Return tools formatted for AI prompt system instructions
    */
   getDefinitionsForPrompt() {
     return this.listTools().map(t => ({
@@ -45,23 +50,34 @@ class ToolRegistry {
   }
 
   registerBuiltinTools() {
-    const getCandidateProfile = require('./tools/getCandidateProfile');
-    const getResume = require('./tools/getResume');
-    const searchJobs = require('./tools/searchJobs');
-    const getJob = require('./tools/getJob');
-    const matchCandidateJob = require('./tools/matchCandidateJob');
-    const tailorResume = require('./tools/tailorResume');
-    const prepareApplication = require('./tools/prepareApplication');
-    const fillApplication = require('./tools/fillApplication');
+    // ── Candidate Tools ──────────────────────────────────────────────
+    this.registerTool(require('./tools/getCandidateProfile'));
+    this.registerTool(require('./tools/getCandidateSkills'));
+    this.registerTool(require('./tools/getCandidatePreferences'));
+    this.registerTool(require('./tools/getResume'));
 
-    this.registerTool(getCandidateProfile);
-    this.registerTool(getResume);
-    this.registerTool(searchJobs);
-    this.registerTool(getJob);
-    this.registerTool(matchCandidateJob);
-    this.registerTool(tailorResume);
-    this.registerTool(prepareApplication);
-    this.registerTool(fillApplication);
+    // ── Job Tools ────────────────────────────────────────────────────
+    this.registerTool(require('./tools/searchJobs'));
+    this.registerTool(require('./tools/filterJobs'));
+    this.registerTool(require('./tools/getJob'));
+    this.registerTool(require('./tools/getJobDetails'));
+    this.registerTool(require('./tools/compareJobs'));
+
+    // ── Matching Tools ───────────────────────────────────────────────
+    this.registerTool(require('./tools/matchCandidateJob'));
+    this.registerTool(require('./tools/calculateMatch'));
+    this.registerTool(require('./tools/explainMatch'));
+
+    // ── Resume Tools ─────────────────────────────────────────────────
+    this.registerTool(require('./tools/analyzeCV'));
+    this.registerTool(require('./tools/tailorResume'));
+    this.registerTool(require('./tools/validateResume'));
+
+    // ── Application Tools ────────────────────────────────────────────
+    this.registerTool(require('./tools/prepareApplication'));
+    this.registerTool(require('./tools/fillApplication'));
+    this.registerTool(require('./tools/createApplicationDraft'));
+    this.registerTool(require('./tools/updateApplicationStatus'));
   }
 }
 

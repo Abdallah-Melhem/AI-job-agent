@@ -1,7 +1,16 @@
 /**
  * Agent Guardrails
- * Enforces safety boundaries, loop prevention, and prompt injection detection.
+ * Phase 8: AI Agent and Controlled Tools
+ *
+ * Enforces safety boundaries:
+ *  1. No arbitrary code execution or OS access
+ *  2. Prompt injection detection
+ *  3. Untrusted external job content sanitization
+ *  4. Maximum step execution limit (loop prevention)
+ *  5. Tool permissions and parameter guardrails
  */
+
+'use strict';
 
 const MAX_STEPS = 12;
 
@@ -11,6 +20,16 @@ const INJECTION_PATTERNS = [
   /reveal (?:system|developer|hidden) (?:prompt|instructions|keys|passwords)/i,
   /you are now (?:dan|evil|unrestricted)/i,
   /execute arbitrary (?:code|command)/i
+];
+
+// Dangerous code execution / OS access keywords forbidden in tools or planner
+const DANGEROUS_SYSTEM_PATTERNS = [
+  /\bchild_process\b/i,
+  /\bexecSync\b/i,
+  /\bspawnSync\b/i,
+  /\bprocess\.exit\b/i,
+  /\bfs\.(?:unlink|rmdir|rm|writeFile)\b/i,
+  /\b(?:eval|Function)\s*\(/i
 ];
 
 class Guardrails {
@@ -25,7 +44,29 @@ class Guardrails {
         throw new Error('Potential prompt injection or instruction override detected.');
       }
     }
+
+    for (const pattern of DANGEROUS_SYSTEM_PATTERNS) {
+      if (pattern.test(text)) {
+        throw new Error('Prohibited system or code execution instruction detected.');
+      }
+    }
+
     return text.trim();
+  }
+
+  /**
+   * Sanitizes external untrusted job descriptions so they cannot inject instructions
+   * into subsequent agent steps (indirect prompt injection protection).
+   */
+  sanitizeUntrustedContent(content) {
+    if (!content || typeof content !== 'string') return '';
+    let sanitized = content;
+    for (const pattern of INJECTION_PATTERNS) {
+      sanitized = sanitized.replace(pattern, '[SUSPICIOUS_INSTRUCTION_REMOVED]');
+    }
+    // Neutralize HTML tags
+    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    return sanitized;
   }
 
   /**
@@ -50,6 +91,13 @@ class Guardrails {
       const paramString = JSON.stringify(params);
       if (paramString && (paramString.includes('"__proto__"') || paramString.includes('"constructor"'))) {
         throw new Error('Guardrail: Suspicious parameter payload rejected.');
+      }
+
+      // Guard against code injection in parameters
+      for (const pattern of DANGEROUS_SYSTEM_PATTERNS) {
+        if (pattern.test(paramString)) {
+          throw new Error(`Guardrail: Parameter contains prohibited code execution sequence for tool "${toolName}".`);
+        }
       }
     }
 

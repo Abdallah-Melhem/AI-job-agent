@@ -16,6 +16,10 @@ const executionLogs = [];
  * 5. Output validation
  */
 class ToolExecutor {
+  constructor() {
+    this.toolRegistry = toolRegistry;
+  }
+
   /**
    * Execute a tool by name with parameters in a user context
    * @param {string} toolName
