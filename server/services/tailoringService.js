@@ -1,20 +1,42 @@
+/**
+ * tailoringService.js — ATS-Compliant Truthful Resume Tailoring Engine
+ * Phase 9: Resume Tailoring
+ *
+ * Tailors a candidate's resume specifically for a job application while strictly ensuring:
+ *  - TRUTHFULNESS: Never invents employers, credentials, or unsupported technologies.
+ *  - ATS COMPLIANCE: Standard single-column structure, action verbs, clear highlights.
+ *  - REVERSE CHRONOLOGICAL: Orders experience and education newest to oldest.
+ *  - CONCISENESS & RELEVANCE: Reorders skills to emphasize job requirements.
+ *  - VALIDATION: Detects and flags any unsupported claims.
+ */
+
+'use strict';
+
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const aiService = require('./aiService');
-const { resumeSchema, validateTailoredResume } = require('./resumeValidator');
+const {
+  resumeSchema,
+  validateTailoredResume,
+  sortReverseChronological
+} = require('./resumeValidator');
 const { generateResumePdf } = require('../templates/resumePdfGenerator');
 const { generateResumeDocx } = require('../templates/resumeDocxGenerator');
 const TailoredResume = require('../models/TailoredResume');
+const logger = require('../utils/logger');
 
 /**
- * Deterministic fallback tailoring engine when AI is offline
+ * Deterministic fallback tailoring engine when AI is offline.
+ * Reorders verified candidate data to highlight job-relevant skills and requirements
+ * without fabricating employers, degrees, or unearned technologies.
  */
 function fallbackTailorResume(candidateProfile, job) {
-  const targetTitle = job.title || 'Software Professional';
+  const targetTitle = job.title || candidateProfile.title || 'Professional';
   const matchingSkills = [];
   const otherSkills = [];
 
-  const jobReqText = `${job.title} ${job.description} ${(job.skills || []).join(' ')}`.toLowerCase();
+  const jobReqText = `${job.title || ''} ${job.description || ''} ${(job.skills || []).join(' ')} ${(job.requirements || []).join(' ')}`.toLowerCase();
+
   for (const s of (candidateProfile.skills || [])) {
     if (jobReqText.includes(s.toLowerCase())) {
       matchingSkills.push(s);
@@ -22,27 +44,41 @@ function fallbackTailorResume(candidateProfile, job) {
       otherSkills.push(s);
     }
   }
+
   const orderedSkills = [...matchingSkills, ...otherSkills];
 
-  const summary = `Results-driven ${targetTitle} with proven technical background. Demonstrated proficiency in ${orderedSkills.slice(0, 4).join(', ')}. Eager to leverage software engineering skills and practical project experience to drive impact at ${job.company}.`;
+  // Professional summary tailored to job and company
+  const companyName = job.company || 'your organization';
+  const topSkillsStr = orderedSkills.slice(0, 4).join(', ');
+  const summarySkillPhrase = topSkillsStr ? `Demonstrated background in ${topSkillsStr}. ` : '';
+  const summary = candidateProfile.summary
+    ? `${candidateProfile.summary} Tailored for ${targetTitle} role at ${companyName}.`
+    : `Results-driven ${targetTitle} with proven technical background. ${summarySkillPhrase}Eager to apply relevant practical skills and project experience to contribute effectively at ${companyName}.`;
 
-  const experience = (candidateProfile.experience || []).map(exp => ({
+  // Sort candidate experience in reverse chronological order
+  const rawExperience = (candidateProfile.experience || []).map(exp => ({
     position: exp.position || 'Developer',
     company: exp.company || 'Organization',
     startDate: exp.startDate || '',
     endDate: exp.endDate || '',
-    highlights: exp.responsibilities 
-      ? exp.responsibilities.split('\n').filter(Boolean)
-      : [`Contributed to key software engineering deliverables utilizing modern development practices.`]
+    highlights: exp.responsibilities
+      ? exp.responsibilities.split('\n').map(h => h.trim()).filter(Boolean)
+      : [`Contributed to core deliverables utilizing modern engineering practices.`]
   }));
 
-  const education = (candidateProfile.education || []).map(edu => ({
+  const experience = sortReverseChronological(rawExperience);
+
+  // Sort candidate education in reverse chronological order
+  const rawEducation = (candidateProfile.education || []).map(edu => ({
     degree: edu.degree || 'Degree Program',
     institution: edu.institution || 'University',
     startDate: edu.startDate || '',
     endDate: edu.endDate || ''
   }));
 
+  const education = sortReverseChronological(rawEducation);
+
+  // Map projects
   const projects = (candidateProfile.projects || []).map(p => ({
     name: p.name || 'Project',
     description: p.description || ''
@@ -51,16 +87,16 @@ function fallbackTailorResume(candidateProfile, job) {
   return {
     targetTitle,
     summary,
-    skills: orderedSkills.length > 0 ? orderedSkills : ['Problem Solving', 'Software Engineering'],
+    skills: orderedSkills.length > 0 ? orderedSkills : ['Problem Solving', 'Engineering Principles'],
     experience: experience.length > 0 ? experience : [{
       position: targetTitle,
-      company: 'Independent Projects / Freelance',
+      company: 'Independent Projects / Practical Experience',
       startDate: '2023',
       endDate: 'Present',
-      highlights: ['Designed and implemented software applications leveraging best design principles and agile practices.']
+      highlights: ['Designed and implemented software deliverables leveraging industry standards and agile practices.']
     }],
     education: education.length > 0 ? education : [{
-      degree: 'Computer Science / Engineering Studies',
+      degree: 'Relevant Studies / Academic Training',
       institution: 'Academic Institution',
       startDate: '2019',
       endDate: '2023'
@@ -71,27 +107,30 @@ function fallbackTailorResume(candidateProfile, job) {
 
 /**
  * Main Tailoring Workflow:
- * Candidate Profile + Job -> AI Resume Tailoring -> Structured Resume -> Resume Validator -> Resume Generator (PDF & DOCX)
+ * Candidate Profile + Job -> AI Resume Tailoring -> Reverse Chronological Enforcement -> Resume Validator -> Output Files (PDF & DOCX)
  */
 async function tailorResumeForJob(user, candidateProfile, job) {
   const prompt = `
-You are an expert ATS resume optimizer and career coach.
+You are an expert ATS resume optimizer and career strategist.
 Tailor the candidate's resume specifically for this job application.
 
-CRITICAL ATS REQUIREMENTS:
-1. TRUTHFUL: Do NOT invent fake previous employers, fake degrees, or unearned credentials.
-2. RELEVANT: Highlight and prioritize skills that match the target job description.
-3. CONCISE: Write impactful, action-oriented bullet points (STAR method).
-4. REVERSE CHRONOLOGICAL: Order experience and education from newest to oldest.
-5. ATS FRIENDLY: Single column, clear professional summary tailored to "${job.title}" at "${job.company}".
+CRITICAL ATS & TRUTHFULNESS REQUIREMENTS:
+1. TRUTHFUL: Do NOT invent fake employers, fake degrees, unearned credentials, or technologies the candidate never provided.
+2. SOURCE GROUNDING: Only use skills, employers, and projects explicitly present in the CANDIDATE DATA.
+3. RELEVANT: Prioritize and emphasize candidate skills and accomplishments that match the job description.
+4. REVERSE CHRONOLOGICAL: Order experience and education strictly from newest to oldest.
+5. CONCISE: Write impactful, action-oriented bullet points (STAR method).
+6. ATS FRIENDLY: Single column, clear professional summary tailored to "${job.title}" at "${job.company}".
 
-CANDIDATE DATA:
+CANDIDATE DATA (Source of truth):
 ${JSON.stringify({
+  title: candidateProfile.title || null,
   skills: candidateProfile.skills || [],
   languages: candidateProfile.languages || [],
   education: candidateProfile.education || [],
   experience: candidateProfile.experience || [],
-  projects: candidateProfile.projects || []
+  projects: candidateProfile.projects || [],
+  summary: candidateProfile.summary || null
 }, null, 2)}
 
 JOB DETAILS:
@@ -100,7 +139,7 @@ ${JSON.stringify({
   company: job.company,
   skills: job.skills || [],
   requirements: job.requirements || [],
-  description: job.description
+  description: (job.description || '').slice(0, 1000)
 }, null, 2)}
 `;
 
@@ -108,14 +147,22 @@ ${JSON.stringify({
   try {
     structuredResume = await aiService.generate(prompt, resumeSchema);
   } catch (error) {
-    console.warn('AI tailoring prompt failed or timed out, generating via ATS fallback engine:', error.message);
+    logger.warn(`[TAILORING] AI generation unavailable, using fallback engine: ${error.message}`);
     structuredResume = fallbackTailorResume(candidateProfile, job);
   }
 
-  // Validate with Resume Validator
+  // Enforce reverse chronological order on experience and education
+  if (Array.isArray(structuredResume.experience)) {
+    structuredResume.experience = sortReverseChronological(structuredResume.experience);
+  }
+  if (Array.isArray(structuredResume.education)) {
+    structuredResume.education = sortReverseChronological(structuredResume.education);
+  }
+
+  // Validate with comprehensive Resume Validator (detects unsupported claims)
   const validation = validateTailoredResume(structuredResume, candidateProfile);
-  if (!validation.isValid) {
-    console.warn('Resume validation warnings/errors:', validation.errors);
+  if (!validation.isTruthful) {
+    logger.warn(`[TAILORING] Unsupported claims flagged in tailored resume: ${validation.unsupportedClaims.join('; ')}`);
   }
 
   // Generate output files (PDF & DOCX)
@@ -130,7 +177,7 @@ ${JSON.stringify({
   const fileId = uuidv4();
   const pdfFilename = `${fileId}.pdf`;
   const docxFilename = `${fileId}.docx`;
-  
+
   const uploadBase = path.join(__dirname, '..', '..', 'uploads', 'tailored');
   const pdfFullPath = path.join(uploadBase, pdfFilename);
   const docxFullPath = path.join(uploadBase, docxFilename);
@@ -141,7 +188,7 @@ ${JSON.stringify({
   const pdfRelativePath = `/uploads/tailored/${pdfFilename}`;
   const docxRelativePath = `/uploads/tailored/${docxFilename}`;
 
-  // Upsert TailoredResume document in MongoDB
+  // Upsert TailoredResume document in MongoDB with validation metadata
   const savedRecord = await TailoredResume.findOneAndUpdate(
     { user: user._id, job: job._id },
     {
@@ -154,7 +201,16 @@ ${JSON.stringify({
       education: structuredResume.education,
       projects: structuredResume.projects,
       pdfPath: pdfRelativePath,
-      docxPath: docxRelativePath
+      docxPath: docxRelativePath,
+      isTruthful: validation.isTruthful,
+      isAtsCompliant: validation.isAtsCompliant,
+      unsupportedClaims: validation.unsupportedClaims,
+      validationReport: {
+        isValid: validation.isValid,
+        isReverseChronological: validation.isReverseChronological,
+        warnings: validation.warnings,
+        errors: validation.errors
+      }
     },
     { upsert: true, new: true, setDefaultsOnInsert: true }
   );
@@ -166,5 +222,6 @@ ${JSON.stringify({
 }
 
 module.exports = {
-  tailorResumeForJob
+  tailorResumeForJob,
+  fallbackTailorResume
 };

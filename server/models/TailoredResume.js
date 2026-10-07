@@ -48,6 +48,21 @@ const tailoredResumeSchema = new mongoose.Schema({
   docxPath: {
     type: String,
     default: ''
+  },
+  // Phase 9: Resume Truthfulness & ATS Quality
+  isTruthful: {
+    type: Boolean,
+    default: true
+  },
+  isAtsCompliant: {
+    type: Boolean,
+    default: true
+  },
+  unsupportedClaims: [{
+    type: String
+  }],
+  validationReport: {
+    type: mongoose.Schema.Types.Mixed
   }
 }, { timestamps: true });
 

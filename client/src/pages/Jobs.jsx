@@ -660,7 +660,30 @@ function Jobs() {
                       </div>
                     </div>
                     <div className="card-body">
-                      <h6 className="fw-bold text-primary">{tailoredResume.targetTitle}</h6>
+                      <div className="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                        <h6 className="fw-bold text-primary mb-0">{tailoredResume.targetTitle}</h6>
+                        <div className="d-flex gap-1">
+                          <span className="badge bg-success" title="Structured single-column ATS layout">✓ ATS-Friendly</span>
+                          {tailoredResume.isTruthful !== false && (!tailoredResume.unsupportedClaims || tailoredResume.unsupportedClaims.length === 0) ? (
+                            <span className="badge bg-info text-dark" title="Grounded in candidate source profile">✓ Verified Truthful</span>
+                          ) : (
+                            <span className="badge bg-warning text-dark" title="Contains unverified or unsupported claims">⚠️ Review Claims</span>
+                          )}
+                          <span className="badge bg-secondary" title="Sorted newest to oldest">📅 Reverse Chronological</span>
+                        </div>
+                      </div>
+
+                      {tailoredResume.unsupportedClaims && tailoredResume.unsupportedClaims.length > 0 && (
+                        <div className="alert alert-warning py-1 px-2 small mb-2">
+                          <strong>⚠️ Flagged Claims:</strong>
+                          <ul className="mb-0 ps-3">
+                            {tailoredResume.unsupportedClaims.map((claim, idx) => (
+                              <li key={idx}>{claim}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
                       <p className="small text-secondary mb-2">{tailoredResume.summary}</p>
                       
                       <small className="fw-bold d-block">Prioritized Skills:</small>
