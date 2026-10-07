@@ -1,19 +1,42 @@
 /**
  * AI Provider Interface
- * All providers must implement a `generate` method that accepts a prompt string
- * and an optional options object (e.g. { schema: {...} }).
+ * Phase 7: AI Quality & Response Validation
  *
- * This abstraction allows swapping providers (Ollama, OpenAI, etc.) without
- * changing the rest of the application.
+ * Base abstract class defining the contract for AI providers (Ollama, Gemini, Mock, etc.).
+ * Allows swapping AI models and providers without modifying business logic.
  */
+
+'use strict';
+
 class AIProvider {
+  constructor(name = 'generic') {
+    this.name = name;
+  }
+
   /**
-   * @param {string} prompt - The user prompt or system instruction.
-   * @param {object} [options] - Optional configuration, e.g. { schema: {...} }
-   * @returns {Promise<any>} - The provider's response (raw text or parsed object).
+   * Provider identifier name
+   * @returns {string}
    */
-  async generate(prompt, options) {
-    throw new Error('generate() not implemented – subclass must override');
+  getName() {
+    return this.name;
+  }
+
+  /**
+   * Health / availability check
+   * @returns {Promise<boolean>}
+   */
+  async isAvailable() {
+    return true;
+  }
+
+  /**
+   * Generate completion from AI provider
+   * @param {string} prompt - Prompt or instruction string
+   * @param {object} [options] - Options (e.g. { schema, timeout, systemInstruction })
+   * @returns {Promise<any>} Raw text or parsed JSON
+   */
+  async generate(prompt, options = {}) { // eslint-disable-line no-unused-vars
+    throw new Error(`generate() not implemented for provider "${this.name}". Subclass must override.`);
   }
 }
 
