@@ -525,59 +525,104 @@ function Jobs() {
                   </button>
                 </div>
 
-                {/* Match Results */}
+                {/* Match Results — Phase 6 Explainable AI */}
                 {matchError && <div className="alert alert-warning py-2 small">{matchError}</div>}
                 {matchResult && (
                   <div className="card border-info mb-3 bg-light">
-                    <div className="card-body">
-                      <div className="d-flex align-items-center gap-2 mb-2">
-                        <span className="fw-bold">Match Score:</span>
+                    <div className="card-header d-flex justify-content-between align-items-center py-2">
+                      <span className="fw-bold">⚡ Match Analysis</span>
+                      <div className="d-flex align-items-center gap-2">
+                        {matchResult.aiEnhanced && (
+                          <span className="badge bg-primary" title="Score enriched with AI semantic analysis">AI Enhanced</span>
+                        )}
+                        {matchResult.confidence && (
+                          <span className="badge bg-secondary" title="Confidence based on profile completeness">
+                            Confidence: {matchResult.confidence}
+                          </span>
+                        )}
                         <span className={`badge bg-${getScoreColor(matchResult.score)} fs-6`}>
                           {matchResult.score}%
                         </span>
                       </div>
+                    </div>
+                    <div className="card-body">
 
+                      {/* Score Breakdown */}
+                      {matchResult.breakdown && (
+                        <div className="mb-3">
+                          <small className="fw-bold text-dark d-block mb-1">Score Breakdown:</small>
+                          <div className="row g-1">
+                            {Object.entries(matchResult.breakdown).map(([dim, { score }]) => (
+                              <div key={dim} className="col-6 col-md-4">
+                                <div className="d-flex justify-content-between align-items-center bg-white rounded p-1 border">
+                                  <span className="small text-muted text-capitalize">{dim}</span>
+                                  <span className={`badge bg-${getScoreColor(score)} small`}>{score}%</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <small className="text-muted d-block mt-1" style={{ fontSize: '0.7rem' }}>
+                            Weights: Skills 40% · Experience 25% · Work Mode 10% · Job Type 10% · Salary 10% · Extras 5%
+                          </small>
+                        </div>
+                      )}
+
+                      {/* Matching Skills */}
                       <div className="mb-2">
-                        <small className="fw-bold text-success d-block">Matching Skills:</small>
+                        <small className="fw-bold text-success d-block">✅ Strengths (Matching Skills):</small>
                         {matchResult.matchingSkills && matchResult.matchingSkills.length > 0 ? (
                           matchResult.matchingSkills.map((s, i) => (
                             <span key={i} className="badge bg-success me-1 mb-1">{s}</span>
                           ))
                         ) : (
-                          <span className="small text-muted">None explicitly detected</span>
+                          <span className="small text-muted">None of the job's listed skills found in your profile</span>
                         )}
                       </div>
 
+                      {/* Missing Skills */}
                       <div className="mb-2">
-                        <small className="fw-bold text-danger d-block">Missing / Required Skills:</small>
+                        <small className="fw-bold text-danger d-block">⚠️ Potential Gaps (Missing Skills):</small>
                         {matchResult.missingSkills && matchResult.missingSkills.length > 0 ? (
                           matchResult.missingSkills.map((s, i) => (
                             <span key={i} className="badge bg-danger me-1 mb-1">{s}</span>
                           ))
                         ) : (
-                          <span className="small text-muted">No major skills missing</span>
+                          <span className="small text-muted">No major skill gaps detected</span>
                         )}
                       </div>
 
-                      {matchResult.relevantExperience && (
+                      {/* Experience Assessment */}
+                      {matchResult.experienceAssessment && (
                         <div className="mb-2">
-                          <small className="fw-bold text-dark d-block">Relevant Experience:</small>
-                          <p className="small mb-1 text-secondary">{matchResult.relevantExperience}</p>
+                          <small className="fw-bold text-dark d-block">📋 Experience:</small>
+                          <p className="small mb-1 text-secondary">{matchResult.experienceAssessment}</p>
                         </div>
                       )}
 
-                      {matchResult.concerns && matchResult.concerns.length > 0 && (
+                      {/* Semantic Insights (AI only) */}
+                      {matchResult.semanticInsights && (
                         <div className="mb-2">
-                          <small className="fw-bold text-warning d-block">Considerations / Concerns:</small>
+                          <small className="fw-bold text-primary d-block">🔍 Skill Depth Insights:</small>
+                          <p className="small mb-1 text-secondary">{matchResult.semanticInsights}</p>
+                        </div>
+                      )}
+
+                      {/* Other Gaps (work mode, salary, etc.) */}
+                      {matchResult.gaps && matchResult.gaps.length > 0 && (
+                        <div className="mb-2">
+                          <small className="fw-bold text-warning d-block">💡 Other Considerations:</small>
                           <ul className="small mb-1 ps-3 text-secondary">
-                            {matchResult.concerns.map((c, i) => <li key={i}>{c}</li>)}
+                            {matchResult.gaps.map((g, i) => <li key={i}>{g}</li>)}
                           </ul>
                         </div>
                       )}
 
+                      {/* Overall Explanation */}
                       {matchResult.explanation && (
                         <div className="mt-2 p-2 bg-white rounded border">
-                          <small className="fw-bold text-primary d-block">AI Explanation:</small>
+                          <small className="fw-bold text-primary d-block">
+                            {matchResult.aiEnhanced ? '🤖 AI Analysis:' : '📊 Analysis:'}
+                          </small>
                           <p className="small mb-0">{matchResult.explanation}</p>
                         </div>
                       )}
