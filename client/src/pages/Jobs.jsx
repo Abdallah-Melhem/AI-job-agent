@@ -127,7 +127,7 @@ function Jobs() {
     setMatchResult(null);
     setMatchError('');
     setTailorError('');
-    setApplicationState(null);
+    setTrackingState(null);
     // Check if a tailored resume already exists for this job
     try {
       const { data } = await api.get(`/jobs/${job._id}/tailor`);
@@ -180,37 +180,19 @@ function Jobs() {
     }
   };
 
-  const [applicationState, setApplicationState] = useState(null);
-  const [applying, setApplying] = useState(false);
+  const [trackingState, setTrackingState] = useState(null); // { tracked: bool, appId: str, status: str, error: str }
+  const [tracking, setTracking] = useState(false);
 
-  const handlePrepareAndFill = async (jobId) => {
+  const handleTrackJob = async (jobId) => {
     try {
-      setApplying(true);
-      setApplicationState({ step: 'Preparing application...' });
-      await api.post(`/applications/job/${jobId}/prepare`);
-      
-      setApplicationState({ step: 'Agent is filling the form...' });
-      const { data } = await api.post(`/applications/job/${jobId}/fill`);
-      
-      setApplicationState({ step: 'Ready to submit', details: data, readyToSubmit: true });
+      setTracking(true);
+      setTrackingState(null);
+      const { data } = await api.post(`/applications/job/${jobId}/track`);
+      setTrackingState({ tracked: true, appId: data._id, status: data.status });
     } catch (err) {
-      setApplicationState({ step: 'Failed', error: err.response?.data?.message || err.message });
+      setTrackingState({ error: err.response?.data?.message || err.message });
     } finally {
-      setApplying(false);
-    }
-  };
-
-  const handleSubmitApplication = async (jobId) => {
-    try {
-      setApplying(true);
-      setApplicationState(prev => ({ ...prev, step: 'Submitting application...' }));
-      const { data } = await api.post(`/applications/job/${jobId}/submit`);
-      
-      setApplicationState({ step: 'Success!', details: data, submitted: true });
-    } catch (err) {
-      setApplicationState({ step: 'Failed', error: err.response?.data?.message || err.message });
-    } finally {
-      setApplying(false);
+      setTracking(false);
     }
   };
 
@@ -710,52 +692,45 @@ function Jobs() {
                   </div>
                 )}
 
-                {/* Application Workflow Section */}
+                {/* Track Application Section */}
                 <div className="card border-primary mb-3 mt-3 bg-white shadow-sm">
                   <div className="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                    <h6 className="mb-0">🚀 Automatic Application Workflow</h6>
-                    {!applicationState?.readyToSubmit && !applicationState?.submitted && (
-                      <button 
-                        className="btn btn-sm btn-light text-primary fw-bold"
-                        onClick={() => handlePrepareAndFill(selectedJob._id)}
-                        disabled={applying}
-                      >
-                        {applying ? 'Agent Working...' : 'Apply via Agent'}
-                      </button>
+                    <h6 className="mb-0">📋 Track This Application</h6>
+                    <a href="/applications" className="btn btn-sm btn-light text-primary fw-bold">
+                      View All Applications ↗
+                    </a>
+                  </div>
+                  <div className="card-body py-2">
+                    {trackingState?.error && (
+                      <p className="text-danger small mb-2">⚠️ {trackingState.error}</p>
                     )}
-                    {applicationState?.readyToSubmit && !applicationState?.submitted && (
-                      <button 
-                        className="btn btn-sm btn-success fw-bold text-white"
-                        onClick={() => handleSubmitApplication(selectedJob._id)}
-                        disabled={applying}
-                      >
-                        {applying ? 'Submitting...' : 'Confirm & Submit'}
-                      </button>
+                    {trackingState?.tracked ? (
+                      <div>
+                        <p className="text-success small fw-bold mb-1">
+                          ✅ Job is being tracked — status: <strong>{trackingState.status}</strong>
+                        </p>
+                        <p className="text-muted small mb-0">
+                          Manage this application in the{' '}
+                          <a href="/applications" className="text-primary">Applications Tracker</a>{' '}
+                          to update status, add notes, and link your tailored resume.
+                        </p>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="small text-muted mb-2">
+                          Save this job to your application tracker. You can then manage the full
+                          workflow: <em>Saved → Preparing → Ready for Review → Applied → Interview → Offer</em>.
+                        </p>
+                        <button
+                          className="btn btn-primary btn-sm fw-bold"
+                          onClick={() => handleTrackJob(selectedJob._id)}
+                          disabled={tracking}
+                        >
+                          {tracking ? 'Adding…' : '🔖 Track This Job'}
+                        </button>
+                      </div>
                     )}
                   </div>
-                  {applicationState && (
-                    <div className="card-body py-2">
-                      <p className={`mb-0 small fw-bold ${applicationState.error ? 'text-danger' : 'text-primary'}`}>
-                        {applicationState.error ? `Error: ${applicationState.error}` : `Status: ${applicationState.step}`}
-                      </p>
-                      
-                      {/* Show preview of filled data before submitting */}
-                      {applicationState.readyToSubmit && applicationState.details?.data?.filled && (
-                        <div className="mt-2 bg-light p-2 border rounded small">
-                          <strong>Form Preview:</strong>
-                          <pre className="mb-0 mt-1" style={{ fontSize: '0.75rem' }}>
-                            {JSON.stringify(applicationState.details.data.filled, null, 2)}
-                          </pre>
-                        </div>
-                      )}
-
-                      {applicationState.details && applicationState.details.status === 'submitted' && (
-                        <p className="mb-0 small text-success fw-bold mt-1">
-                          Final Status: {applicationState.details.status} {applicationState.details.externalId ? `(ID: ${applicationState.details.externalId})` : ''}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 <h6>Job Description</h6>

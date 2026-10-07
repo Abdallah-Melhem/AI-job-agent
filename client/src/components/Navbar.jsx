@@ -31,6 +31,9 @@ function Navbar() {
                 <Link className="nav-link" to="/jobs">Jobs</Link>
               </li>
               <li className="nav-item">
+                <Link className="nav-link" to="/applications">Applications 📋</Link>
+              </li>
+              <li className="nav-item">
                 <Link className="nav-link text-primary fw-bold" to="/agent">AI Agent 🤖</Link>
               </li>
               <li className="nav-item">

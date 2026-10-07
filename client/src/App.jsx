@@ -10,6 +10,7 @@ import CVManager from './pages/CVManager';
 import Jobs from './pages/Jobs';
 import AgentDashboard from './pages/AgentDashboard';
 import Integrations from './pages/Integrations';
+import Applications from './pages/Applications';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/agent" element={<AgentDashboard />} />
           <Route path="/integrations" element={<Integrations />} />
+          <Route path="/applications" element={<Applications />} />
         </Routes>
       </Router>
     </AuthProvider>
