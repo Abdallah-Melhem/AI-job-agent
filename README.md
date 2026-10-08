@@ -275,4 +275,4 @@ Unit test suites cover:
 ---
 
 ## 📄 License
-Educational and portfolio demonstration project. Developed with full-stack best practices.
+Educational and portfolio demonstration project. Developed by Abdallah Melhem.
